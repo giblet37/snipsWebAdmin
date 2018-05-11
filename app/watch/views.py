@@ -544,7 +544,7 @@ def format_audioserver_playFinished(siteId):
     if siteId in devices:
         t = getTimeString()  # strftime("%H:%M:%S.%f", gmtime())    
         #[Hotword] detected on site zero, for model default
-        strg = TIME_FIELD + EVENT_AUDIOSERVER + "site " + SITE_ID + " finished paying the sound file<br>"
+        strg = TIME_FIELD + EVENT_AUDIOSERVER + " site " + SITE_ID + " finished paying the sound file<br>"
         return strg.format(t, siteId)
     return ''
 
