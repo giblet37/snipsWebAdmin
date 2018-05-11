@@ -3,7 +3,7 @@ Web based administrative system for Snips devices
 
 Install this to the main RPi snips instance (not satellite devices)
 
-    # install pip
+    #install pip
     sudo apt-get install python-pip
     
     #clone this git
@@ -16,13 +16,13 @@ Install this to the main RPi snips instance (not satellite devices)
 # Starting web console
 
 
-    # alter the settings.yml file in the base directory
+    #alter the settings.yml file in the base directory
     change the MQTT settings to match as needed
     
-    # start
+    #start
     ./boot.sh
     
-    (if it doesnt start you need to change the boot.sh to bootable.. only have to do this one)
+    (if it doesnt start you need to change the boot.sh to bootable.. only have to do this once)
     chmod +x boot.sh
     
     then run ./boot.sh again
