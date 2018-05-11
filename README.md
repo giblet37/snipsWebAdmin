@@ -27,6 +27,9 @@ Install this to the main RPi snips instance (not satellite devices)
     
     then run ./boot.sh again
     
-You can create a service to start the console when the pi starts
+Or you can create a service to start the console when the pi starts
 
-    
+    #copy service file
+    sudo cp snipsWebAdmin.service /lib/systemd/system/snipsWebAdmin.service
+    sudo systemctl enable snipsWebAdmin.service
+    sudo systemctl start snipsWebAdmin.service
