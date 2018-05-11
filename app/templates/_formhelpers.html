@@ -1,0 +1,52 @@
+{% macro render_required_field(field) %}
+
+    {% if field.type == 'CSRFTokenField' %}
+        {{ field }}
+
+        {% if field.errors %}
+            <div class="warning">You have submitted an invalid CSRF token</div>
+        {% endif %}
+    {% elif field.type == 'HiddenField' %}
+        {{ field }}
+    {% else %}
+            <label for="{{ field.label.field_id }}">{{ field.label.text }}</label>
+                {% if field.description %}
+                    {{ field(class_="form-control",placeholder=field.description,required=True) }}
+                {% else %}
+                    {{ field(class_="form-control",required=True) }}
+                {% endif %}
+                <div class="invalid-feedback">
+                    This field is required or invalid
+                </div>
+    {% endif %}
+
+{% endmacro %}
+
+{% macro render_field(field) %}
+
+    {% if field.type == 'CSRFTokenField' %}
+        {{ field }}
+
+        {% if field.errors %}
+            <div class="warning">You have submitted an invalid CSRF token</div>
+        {% endif %}
+    {% elif field.type == 'HiddenField' %}
+        {{ field }}
+    {% else %}
+            <label for="{{ field.label.field_id }}">{{ field.label.text }}</label>
+                {% if field.description %}
+                    {{ field(class_="form-control",placeholder=field.description) }}
+                {% else %}
+                    {{ field(class_="form-control") }}
+                {% endif %}
+                <div class="invalid-feedback">
+                    This field is required or invalid
+                </div>
+    {% endif %}
+
+{% endmacro %}
+
+
+
+                  
+                        

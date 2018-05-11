@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}Snips Admin{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+   
+</div>
+<style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    .content { height: 100%; margin-bottom: 10px}
+    #editor,#syslogview { width:100%; overflow-y: scroll; overflow-x: scroll; padding: 10px; resize: none; background-color: #444; color: white; font-size: 14px; font-family: monospace;}
+    .container { width: 100%; padding-right: 0px; padding-left: 0px;}
+    #syslogview1 { white-space: nowrap; display: block; overflow: hidden; overflow-y:scroll; padding: 10px;  min-height: 100%; resize: none;background-color: #444; color: white; font-size: 14px; font-family: monospace;}
+    
+    .serviceActive {color: green; font-weight: bold;}
+    .serviceInactive {color: red; font-weight: bold;}
+    .my-name-class {width:50%;}
+
+    #updatelogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
+
+
+
+</style>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="mqtt-tab" data-toggle="tab" href="#mqtt" role="tab" aria-controls="mqtt" aria-selected="true">MQTT</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="toml-tab" data-toggle="tab" href="#toml" role="tab" aria-controls="toml" aria-selected="false">TOML</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="services-tab" data-toggle="tab" href="#services" role="tab" aria-controls="services" aria-selected="false">Services</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="assistant-tab" data-toggle="tab" href="#assistant" role="tab" aria-controls="assistant" aria-selected="false">Assistant</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="syslog-tab" data-toggle="tab" href="#syslog" role="tab" aria-controls="syslog" aria-selected="false">SysLog</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="about-tab" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="false">About</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content">
+
+        <div class="tab-pane card-body active" id="mqtt" role="tabpanel" aria-labelledby="mqtt-tab">
+            <h5 class="card-title">MQTT Connection</h5>
+            {% if connected=='YES' %}
+                <div class="alert alert-success" role="alert">
+                    MQTT Server connected
+                </div>
+            {% else%}
+                <div class="alert alert-warning" role="alert">
+                    MQTT Server not connected. Check your config file settings
+                </div>
+            {% endif %}
+            {{ table }}
+        </div>
+
+        <div class="tab-pane card-body" id="toml" role="tabpanel" aria-labelledby="toml-tab">
+            <h5 class="card-title">Snips Config '/etc/snips.toml' file</h5>
+            <div class="container">
+                <section class="content">
+                    <form action="{{ url_for('main.backup') }}" method="post" id="form">
+                        <textarea name="editor" id="editor">{{ fileText }}</textarea>
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalCenterTitle">Save TOML</h5>
+                                
+                                </div>
+                                <div class="modal-body" id="msgbody">
+                                    <div id="msgcomplete" style="display: none;">
+                                        
+                                    </div>
+                                    <div class="progress" id="progress" style="display: none;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                                    </div>
+                                    <div id="message">
+                                        <p>Saving changes, write all text out to the snips.toml file, then restarts snips services.</p>
+                                        <p>Tick the box to create a backup of the current TOML file before saving changes. This will overwrite any previous backup file.</p>
+                                        <div class="input-group mb-3">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">
+                                                <input id="chkbox" type="checkbox" aria-label="Checkbox for following text input">
+                                                </div>
+                                            </div>
+                                            <input type="text" class="form-control" aria-label="Text input with checkbox" disabled value="Backup the current TOML file">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" id="btnClose" data-dismiss="modal">Close</button>
+                                    <input class="btn btn-primary" id="submit" type="submit" value="Save and Restart">
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        <!-- Button trigger modal -->
+                        <button id="saveTOML" type="button" class="btn btn-primary mt-1" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#exampleModalCenter">
+                            Save Changes
+                        </button>
+                    </form>
+                </section>
+            </div>  
+        </div>
+
+        <div class="tab-pane card-body" id="services" role="tabpanel" aria-labelledby="services-tab">
+            <table style="width: 100%">
+                <tr>
+                    <td><h5 class="card-title">Services</h5></td>
+                    <td style="text-align: right">
+                        <!-- Modal restart snips services-->
+                        <div class="modal fade" id="restartsnipsModalCenter" tabindex="-1" role="dialog" aria-labelledby="restartsnipsModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="restartsnipsModalCenterTitle">Restarting Snips Services</h5>
+                                
+                                </div>
+                                <div class="modal-body" id="msgbody">
+                                    <div id="msgrestartcomplete" style="text-align: center">
+                                        Restarting.....
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" id="btnRestartSnipsClose" data-dismiss="modal" style="visibility: hidden;">Close</button>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        <!-- Modal apt-get update -->
+                        <div class="modal fade" id="updateModalCenter" tabindex="-1" role="dialog" aria-labelledby="updateModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="updateModalCenterTitle">Updating Snips</h5>
+                                
+                                </div>
+                                <div class="modal-body" id="msgbody">
+                                    <div id="msgupdatecomplete" style="display: none;">
+                                        
+                                    </div>
+                                    
+                                    <div id="updatemessage">
+                                        <div name="updatelogview" id="updatelogview" contenteditable="false">
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" id="btnUpdateClose" data-dismiss="modal" style="visibility: hidden;">Close</button>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        <!-- Button trigger modal restart services-->
+                        <button id="btnRestartSnips" type="button" style="margin-bottom: 0.75rem;"  onclick="btnRestartSnips()" class="btn btn-secondary btn-sm" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#restartsnipsModalCenter">
+                                Restart Snips Services
+                            </button>
+                        <!-- Button trigger modal apt-get update upgrade-->
+                        <button id="btnUpdateSnips" type="button" style="margin-bottom: 0.75rem;"  onclick="btnUpdateClick()" class="btn btn-secondary btn-sm" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#updateModalCenter">
+                            Update to latest Snips
+                        </button>
+                    </td>
+                </tr>
+            </table>
+            
+            <div class="container">
+                <section class="content">
+                    {{ servicesTable|safe }}
+                </section>
+            </div>
+        </div>
+
+        <div class="tab-pane card-body" id="assistant" role="tabpanel" aria-labelledby="assistant-tab">
+            <table style="width: 100%">
+                <tr>
+                    <td><h5 class="card-title">Assistant Information</h5></td>
+                    <td style="text-align: right">
+                        <!-- Modal update assistant from console-->
+                        <div class="modal fade" id="updateAssistantModalCenter" tabindex="-1" role="dialog" aria-labelledby="updateAssistantModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="updateAssistantModalCenterTitle">Updating Assistant from Console</h5>
+                                
+                                </div>
+                                <div class="modal-body" id="msgbody">
+                                    <div id="msgupdateassistantcomplete" style="display: none;">
+                                        
+                                    </div>
+                                    
+                                    <div id="updateassistantmessage">
+                                        <div name="updateassistantlogview" id="updateassistantlogview" contenteditable="false">
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" id="btnUpdateSnipsAssistantClose" data-dismiss="modal" style="visibility: hidden;">Close</button>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        <!-- Button trigger modal update assistant from console -->
+                        <button id="btnUpdateSnipsAssistant" disabled type="button" style="margin-bottom: 0.75rem;"  onclick="btnUpdateSnipsAssistantClick()" class="btn btn-secondary btn-sm" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#updateAssistantModalCenter">
+                            Update Snips Assistant
+                        </button>
+                    </td>
+                </tr>
+            </table>
+            <div class="container">
+                <section class="content">
+                     {{ table_assistant }}
+                </section>
+            </div>
+            <h5 class="card-title">Skills</h5>
+            <div class="container">
+                <section class="content">
+                    {{ table_slots }}
+                </section>
+            </div>
+        </div>
+
+        <div class="tab-pane card-body " id="syslog" role="tabpanel" aria-labelledby="syslog-tab">
+            <h5 class="card-title">System Log '/var/log/syslog'</h5>
+            <div class="container">
+                <section class="content">
+                    <form action="{{ url_for('main.getsyslog') }}" method="post" id="form">
+                        <div name="syslogview" id="syslogview" contenteditable="false">{{ syslogfile|safe }}</div>
+
+                        <button type="button" class="btn btn-primary" style="margin-top: 10px" id="btnRefresh" onclick="refreshSysLog(this)">
+                            Refresh
+                        </button>
+                    </form>
+                </section>
+            </div>  
+        </div>
+
+        <div class="tab-pane card-body" id="about" role="tabpanel" aria-labelledby="about-tab">
+            <h5 class="card-title">About this..</h5>
+            <p class="card-text">
+                Current Version: {{ version }}</br></br>
+                Snips Management System for managing your snips network.
+            </p>
+            <a href="http://snips.ai" target="_blank" class="btn btn-primary">Go to Snips.ai</a>
+            <a href="http://console.snips.ai" target="_blank" class="btn btn-primary">Go to Snips Conole</a>
+        </div>
+
+    </div>
+
+   
+</div>
+
+
+
+
+
+
+<script type="text/javascript">//<![CDATA[ 
+
+    $(document).ready(function() {
+
+        var ed = document.getElementById("editor"); 
+        htmlContent = ed.innerHTML;
+        if (htmlContent.startsWith('Snips TOML file not found')) {
+            document.getElementById("saveTOML").disabled = true;
+        }
+
+        var ed = document.getElementById("syslogview"); 
+        htmlContent = ed.innerHTML;
+        if (htmlContent.startsWith('error: Error with Syslog')) {
+            document.getElementById("btnRefresh").disabled = true;
+        }
+    });
+
+    function resize()
+    {
+        var heights = window.innerHeight;
+        var top = $("#toml").position();
+        var makeit = heights - top.top - 90;
+        var makeit1 = heights - top.top - 210;
+        document.getElementById("toml").style.height = makeit + "px";
+        var ed = document.getElementById("editor");
+        ed.style.maxHeight = makeit1 + "px";
+        ed.style.height = makeit1 + "px";
+        
+        top = $("#syslog").position();
+        var makeit = heights - top.top - 90;
+        var makeit1 = heights - top.top - 210;
+        document.getElementById("syslog").style.height = makeit + "px";
+        ed = document.getElementById("syslogview");
+        ed.style.maxHeight = makeit1 + "px";
+        ed.style.height = makeit1 + "px";
+        //ed.scrollTop = ed.scrollHeight;
+    }
+    resize();
+    window.onresize = function() {
+        resize();
+    };
+    //]]>  
+
+
+    var socket = io.connect('http://' + document.domain + ':' + location.port + '/toml');
+
+    //socket returning info for the syslog
+    socket.on('log', function (msg) {
+        var ed = document.getElementById("syslogview");
+        ed.innerHTML = msg;
+        ed.scrollTop = ed.scrollHeight;
+    });
+
+    //socket returning apt-get updating snips info
+    socket.on('updatingSnipsLog', function (msg) {
+        var ed = document.getElementById("updatelogview");
+        ed.innerHTML += msg;
+        ed.scrollTop = ed.scrollHeight;
+    });
+
+    //socket apt-get complete.. show close button
+    socket.on('updatingSnipsComplete', function (msg) {
+        var btn = document.getElementById("btnUpdateClose");
+        btn.style.visibility = 'visible';
+    });
+
+    //restartServicesComplete
+    socket.on('restartServicesComplete', function (msg) {
+        var ed = document.getElementById("msgrestartcomplete");
+        ed.innerHTML = msg;
+        var btn = document.getElementById("btnRestartSnipsClose");
+        btn.style.visibility = 'visible';
+    });
+
+    function refreshSysLog() {
+        socket.emit('refresh', { 'a': 'b' });
+    }
+
+    
+    function btnRestartSnips() {
+        //console.log('restart click')
+        socket.emit('restartsnipsservices', { 'a': 'b' });
+    }
+
+    function btnUpdateClick() {
+        //console.log('update click')
+        socket.emit('updatesnips', { 'a': 'b' });
+    }
+
+    document.getElementById("submit").onclick = function() {
+        var t = document.getElementById("editor").value;
+        var chk = document.getElementById("chkbox").checked;
+       
+        event.preventDefault();
+
+        var progressdiv = document.getElementById("progress");
+        progressdiv.style.display = null;
+        document.getElementById("message").style="display: none;";
+        document.getElementById("submit").style="display: none;";
+
+        event.preventDefault();
+		$.ajax({
+            data : JSON.stringify({ toml: t, backup: chk }),
+            type : 'POST',
+            url : '/toml',
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(data){  
+                var thisSession = data;
+                if(thisSession.hasOwnProperty('error')){
+                    progressdiv.style="display: none;";
+                    p=document.getElementById("msgcomplete");
+                    p.style="text-align: left; color: red;";
+                    p.innerHTML = thisSession['error'];
+                    p.style.display = null;
+                }
+                else {
+                    progressdiv.style="display: none;";
+                    p=document.getElementById("msgcomplete");
+                    p.style="text-align: center;";
+                    p.innerHTML = "Complete!";
+                    p.style.display = null;
+                }
+                
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                //alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+                progressdiv.style="display: none;";
+                p=document.getElementById("msgcomplete");
+                p.style="text-align: center; color: red;";
+                p.innerHTML = "ERROR!!!!!!!!!";
+                p.style.display = null;
+            }  
+        })
+
+        
+	};
+
+   
+
+    $('#exampleModalCenter').on('hidden.bs.modal', function (e) {
+        $('#exampleModalCenter').modal('hide')
+        document.getElementById("progress").style="display: none;";
+        p=document.getElementById("msgcomplete");
+        p.style="text-align: center;";
+        p.innerHTML = "";
+        p.style="display: none;";
+        document.getElementById("message").style = null;
+        document.getElementById("submit").style = null;
+        document.getElementById("chkbox").checked = false;
+    })
+
+    $('#updateModalCenter').on('hidden.bs.modal', function (e) {
+        $('#updateModalCenter').modal('hide')
+        p=document.getElementById("updatelogview");
+        p.innerHTML = "";
+        document.getElementById("btnUpdateClose").style="visibility: hidden;";
+    })
+
+    $('#restartsnipsModalCenter').on('hidden.bs.modal', function (e) {
+        $('#restartsnipsModalCenter').modal('hide')
+        p=document.getElementById("msgrestartcomplete");
+        p.innerHTML = "Restarting.....";
+        document.getElementById("btnRestartSnipsClose").style="visibility: hidden;";
+    })
+
+    
+</script>
+
+
+
+<script src="{{ url_for('static', filename='sh.js') }}"></script>
+
+{% endblock %}
+

@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Snips - Watch{% endblock %}
+
+{% block page_content %}
+
+<style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    .container { display: table; }
+    .content { height: 100%; }
+    #editor { display: block; overflow: hidden; overflow-y:scroll; padding: 10px;  min-height: 100%; resize: none;background-color: white; color: black; font-size: 14px; font-family: monospace;}
+    .container { width: 100%; padding-right: 0px; padding-left: 0px;}
+    .table {margin-bottom: 0px;}
+    .card-header {padding: 3px 10px 5px 10px;}
+    .form-control:disabled {background-color: #fff; color: black}
+    .card {background-color: rgba(0, 0, 0, 0.03);}
+
+    .eTR {width: 100%;}
+    .eTDL {width: 49%; text-align: right; color: darkblue;}
+    .eTDM {width: 2%; text-align: center; color: darkgray;}
+    .eTDR {width: 49%; text-align: left;}
+    
+    .time {color: orange; font-weight: bold;}
+    .siteId {color: red; font-weight: bold;}
+    .hotword {color: blueviolet; font-weight: bold;}
+    .asr {color: green; font-weight: bold;}
+    .dialogue {color: rgb(255, 0, 234); font-weight: bold;}
+    .asrtext {color: darkgreen; font-weight: bold;}
+    .nlufilter {color: lightcoral; font-weight: bold;}
+    .nlu {color: brown; font-weight: bold;}
+    .intent {color: brown; font-weight: bold;}
+    .intentstring {color: brown; font-weight: bold;}
+    .audioserver {color:cadetblue; font-weight: bold;}
+    .tts {color:gold; font-weight: bold;}
+    
+</style>
+
+<div class="page-header">
+   
+</div>
+
+<div class="collapse card mt-3" id="snipsDevicesCollapseView">
+    <div class="card-header">
+        <table class="table table-borderless table-sm">
+            <tr>
+                <td style="vertical-align: middle">
+                    Select devices to watch
+                </td>
+                <td style=" text-align: right">
+                    {% if deviceCount > 0 %}
+                        <button class="btn btn-outline-secondary btn-sm" type="button" id="btnselectalldevices" onclick="selectAllDevices(this)" value="Unselect All Devices">
+                            Unselect All Devices
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    
+    </div>
+    <div class="card-body">
+         {% for item in devices %}
+            <div class="input-group mb-3">
+                <div class="input-group-prepend" style="width:100%">
+                    <div class="input-group-text" style="width:100%">
+                        <input type="checkbox" name="checkbox" aria-label="{{ item }}" value="{{ item }}" onclick="deviceCheckboxClickHandler(this);" checked>&nbsp;&nbsp;&nbsp;{{ item }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% if deviceCount == 0 %}
+        <div style="text-align: center">
+             <B>No Snips devices found while scanning. Try again.</B>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <table class="table table-borderless table-sm">
+            <tr>
+                <td style="vertical-align: middle">
+                        Snips Watch
+                </td>
+                <td style=" text-align: right">
+                    <button class="btn btn-secondary btn-sm" type="button" id="btnclear" onclick="btnClearMQTTMessagesClickHandler()">
+                        Clear Log
+                    </button>
+                    <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#snipsDevicesCollapseView" aria-expanded="false" aria-controls="snipsDevicesCollapseView">
+                        Devices
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="card-body" id="card-body">
+            <div class="container">
+                <section class="content">
+                        <div id="editor" contenteditable="false"></div>
+                </section>
+            </div>
+    </div>
+  </div>
+
+
+
+<script type="text/javascript">
+    //socket var
+    var socket = io.connect('http://' + document.domain + ':' + location.port + '/watch');
+
+    //socket message for when mqtt messages come in
+    //add message info to the mqtt message box to view
+    socket.on('mqtt', function (msg) {
+        var ed = document.getElementById("editor");
+        htmlContent = ed.innerHTML;
+            htmlContent += msg;
+        ed.innerHTML = htmlContent;
+        ed.scrollTop = ed.scrollHeight;
+    });
+
+    //clear the mqtt messages box (empty it)
+    function btnClearMQTTMessagesClickHandler() {
+        $('#editor').empty();
+    }
+
+    //select all the devices checkboxes
+    function selectAllDevices(ctl) {
+
+        var s = 'select';
+        if (ctl.value == 'Select All Devices') {
+            ctl.value = 'Unselect All Devices';
+            ctl.innerHTML = 'Unselect All Devices';
+        } else {
+            s = '';
+            ctl.value = 'Select All Devices';
+            ctl.innerHTML = 'Select All Devices';
+        }
+        checkboxes = document.getElementsByName('checkbox');
+        for (var i = 0, n = checkboxes.length; i < n; i++) {
+
+            if (s == 'select') {
+                if (checkboxes[i].checked == false) {
+                    checkboxes[i].click();
+                }
+            }
+            else {
+                if (checkboxes[i].checked == true) {
+                    checkboxes[i].click();
+                }
+            }
+            
+        }
+    }
+
+    //checkbox clicked
+    function deviceCheckboxClickHandler(cb) {
+        socket.emit('checkbox', { device: cb.value, checked: cb.checked });
+    }
+
+    //resize the view area to fit the window size
+    function resize()
+    {
+        var heights = window.innerHeight;
+        var top = $("#card-body").position();
+        var makeit = heights - top.top - 90;
+        var makeit1 = heights - top.top - 130;
+        document.getElementById("card-body").style.height = makeit + "px";
+        var ed = document.getElementById("editor");
+        ed.style.maxHeight = makeit1 + "px";
+        ed.style.height = makeit1 + "px";
+        ed.scrollTop = ed.scrollHeight;
+    }
+    resize();
+    window.onresize = function() {
+        resize();
+    };
+    
+</script> 
+
+{% endblock %}
