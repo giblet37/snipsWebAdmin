@@ -238,7 +238,7 @@ def get_snips_service_status():
             version = service[1]
        
         is_Service = subprocess_read('systemctl show -p LoadState {} | sed \'s/LoadState=//g\''.format(service[0]))
-        print(is_Service)
+       
         if is_Service == "loaded<br>":
             is_active = subprocess_read('systemctl show -p ActiveState {} | sed \'s/ActiveState=//g\''.format(service[0]))
             listItems.append(serviceItem(service[0], version ,is_active.replace("<br>","").capitalize()))
