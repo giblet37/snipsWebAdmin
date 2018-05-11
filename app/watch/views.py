@@ -82,7 +82,7 @@ def disconnect():
     sessions = []
     #devices = []
     iamhere = ''
-    print('disconnect')
+
     #remove mqtt subscriptions
     #mqtt.unsubscribe_all()
 
@@ -556,8 +556,7 @@ def format_tts_sayfinished(payload):
 
 def complete_slot_information(slots):
     slottext = ''
-    print(slots)
-    print(len(slots))
+
     if len(slots) > 0:
         for slotItem in slots:
             kind = slotItem['value']['kind']
