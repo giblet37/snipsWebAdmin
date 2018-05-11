@@ -4,7 +4,7 @@ Web based administrative system for Snips devices
 Install this to the main RPi snips instance (not satellite devices)
 
     #install pip
-    sudo apt-get install python-pip
+    sudo apt-get install python-pip python-git
     
     #clone this git
     git clone https://github.com/oziee/snipsWebAdmin.git
