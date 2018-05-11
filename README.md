@@ -3,8 +3,6 @@ Web based administrative system for Snips devices
 
 Install this to the main RPi snips instance (not satellite devices)
 
-..
-
     # install pip
     sudo apt-get install python-pip
     
@@ -12,16 +10,16 @@ Install this to the main RPi snips instance (not satellite devices)
     git clone https://github.com/oziee/snipsWebAdmin.git
     
     #install deps
+    cd snipsWebAdmin
     pip install -r requirements.txt
     
 # Starting web console
-..
+
 
     # alter the settings.yml file in the base directory
     change the MQTT settings to match as needed
     
     # start
-    cd snipsWebAdmin
     ./boot.sh
     
     (if it doesnt start you need to change the boot.sh to bootable.. only have to do this one)
