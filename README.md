@@ -17,6 +17,9 @@ Install this to the main RPi snips instance (not satellite devices)
 # Starting web console
 ..
 
+    # alter the settings.yml file in the base directory
+    change the MQTT settings to match as needed
+    
     # start
     cd snipsWebAdmin
     ./boot.sh
