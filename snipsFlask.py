@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:12:41 pm
 # Author: Greg
 # -----
-# Last Modified: Wed May 09 2018
+# Last Modified: Sat May 12 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -50,9 +50,9 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 sock = get_socketio()
 
 
-@app.context_processor
-def inject_version():
-    return dict(version=app.config['VERSION'])
+#@app.context_processor
+#def inject_version():
+#    return dict(version=app.config['VERSION'])
 
 
 @app.cli.command()

@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:42:34 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 11 2018
+# Last Modified: Sat May 12 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -46,7 +46,6 @@ class Config:
     SUDO_PASSWORD = 'raspberry'
     SSL_REDIRECT = False
     YAMLFILE = os.path.join(basedir,"data/settings.yaml")
-    VERSION = "0.1"
     SNIPS_TOML = "/etc/snips.toml"
     SNIPS_TOML_BACKUP = "/etc/snips.toml.bak"
     SNIPS_ASSISTANT_SNIPSFILE = '/usr/share/snips/assistant/Snipsfile.yaml'
