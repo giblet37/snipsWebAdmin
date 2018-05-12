@@ -39,14 +39,12 @@ from . import main
 from app import mqtt,mqttYaml,socketio
 from flask_socketio import emit
 import utils
+import os
 import json
 from shutil import copyfile
 import subprocess
 import string
-from os.path import dirname, isdir, join, isfile
-import re
 
-version_re = re.compile('^Version: (.+)$', re.M)
 
 class ActiveInactiveCol(Col):
 
@@ -191,7 +189,7 @@ def index():
 
     #load the snips.toml config file
     fileText = 'Snips TOML file not found at {}'.format(current_app.config['SNIPS_TOML'])
-    if isfile(current_app.config['SNIPS_TOML']):
+    if os.path.isfile(current_app.config['SNIPS_TOML']):
         file = open(current_app.config['SNIPS_TOML'] , "r")
         fileText = file.read() 
 
@@ -203,7 +201,7 @@ def index():
     table_assistant, table_slots = get_assistant_table()
     servicesTable = get_snips_service_status()
 
-    return render_template('index.html', table=get_mqtt_table(), connected=connected, fileText=fileText, servicesTable=servicesTable, table_assistant=table_assistant, table_slots=table_slots, syslogfile=syslogfile,version=get_version())
+    return render_template('index.html', table=get_mqtt_table(), connected=connected, fileText=fileText, servicesTable=servicesTable, table_assistant=table_assistant, table_slots=table_slots, syslogfile=syslogfile)
 
 def get_mqtt_table():
     items = []
@@ -328,42 +326,3 @@ def subprocess_read(command):
     return text
 
 
-def get_version():
-    d = dirname(__file__)
-
-    if isdir(join(d, '.git')):
-        # Get the version using "git describe".
-        cmd = 'git describe --tags --match [0-9]*'.split()
-        try:
-            version = subprocess.check_output(cmd).decode().strip()
-        except subprocess.CalledProcessError:
-            print('Unable to get version number from git tags')
-            exit(1)
-
-        # PEP 386 compatibility
-        if '-' in version:
-            version = '.post'.join(version.split('-')[:2])
-
-        # Don't declare a version "dirty" merely because a time stamp has
-        # changed. If it is dirty, append a ".dev1" suffix to indicate a
-        # development revision after the release.
-        with open(os.devnull, 'w') as fd_devnull:
-            subprocess.call(['git', 'status'],
-                            stdout=fd_devnull, stderr=fd_devnull)
-
-        cmd = 'git diff-index --name-only HEAD'.split()
-        try:
-            dirty = subprocess.check_output(cmd).decode().strip()
-        except subprocess.CalledProcessError:
-            print('Unable to get git index status')
-            exit(1)
-
-        if dirty != '':
-            version += '.dev1'
-
-    else:
-        # Extract the version from the PKG-INFO file.
-        with open(join(d, 'PKG-INFO')) as f:
-            version = version_re.search(f.read()).group(1)
-
-    return version

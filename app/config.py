@@ -46,6 +46,7 @@ class Config:
     SUDO_PASSWORD = 'raspberry'
     SSL_REDIRECT = False
     YAMLFILE = os.path.join(basedir,"data/settings.yaml")
+    VERSION = "0.1"
     SNIPS_TOML = "/etc/snips.toml"
     SNIPS_TOML_BACKUP = "/etc/snips.toml.bak"
     SNIPS_ASSISTANT_SNIPSFILE = '/usr/share/snips/assistant/Snipsfile.yaml'
