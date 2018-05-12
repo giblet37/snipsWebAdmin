@@ -45,6 +45,8 @@ import sys
 import click
 
 from app import create_app, get_socketio
+import eventlet
+eventlet.monkey_patch()
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 sock = get_socketio()
@@ -54,12 +56,14 @@ sock = get_socketio()
 def inject_version():
     return dict(version=app.config['VERSION'])
 
+sock.run(app, host='0.0.0.0', port=5000, log_output=True)
 
-@app.cli.command()
-@click.option('--length', default=25,
-              help='Number of functions to include in the profiler report.')
-@click.option('--profile-dir', default=None,
-              help='Directory where profiler data files are saved.')
-def profile(length, profile_dir):   
-    sock.run(app, host='0.0.0.0', port=5000, log_output=True)
+
+#@app.cli.command()
+#@click.option('--length', default=25,
+#              help='Number of functions to include in the profiler report.')
+#@click.option('--profile-dir', default=None,
+#              help='Directory where profiler data files are saved.')
+#def profile(length, profile_dir):   
+#    sock.run(app, host='0.0.0.0', port=5000, log_output=True)
    
