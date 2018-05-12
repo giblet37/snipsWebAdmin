@@ -52,9 +52,9 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 sock = get_socketio()
 
 
-@app.context_processor
-def inject_version():
-    return dict(version=app.config['VERSION'])
+#@app.context_processor
+#def inject_version():
+#    return dict(version=app.config['VERSION'])
 
 sock.run(app, host='0.0.0.0', port=5000, log_output=True)
 

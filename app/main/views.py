@@ -201,7 +201,7 @@ def index():
     table_assistant, table_slots = get_assistant_table()
     servicesTable = get_snips_service_status()
 
-    return render_template('index.html', table=get_mqtt_table(), connected=connected, fileText=fileText, servicesTable=servicesTable, table_assistant=table_assistant, table_slots=table_slots, syslogfile=syslogfile)
+    return render_template('index.html', table=get_mqtt_table(), connected=connected, fileText=fileText, servicesTable=servicesTable, table_assistant=table_assistant, table_slots=table_slots, syslogfile=syslogfile, version=current_app.config['VERSION'])
 
 def get_mqtt_table():
     items = []
