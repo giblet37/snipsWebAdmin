@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 8:35:06 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 11 2018
+# Last Modified: Sat May 12 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -56,19 +56,24 @@ class ActiveInactiveCol(Col):
                 content=content,
                 escape_content=False,
                 attrs={'class': 'serviceActive'})
-        else:
-            if item.isActive == 'Inactive':
+        elif item.isActive == 'Inactive':
                 return html.element(
                     'td',
                     content=content,
                     escape_content=False,
                     attrs={'class': 'serviceInactive'})
-            else:
+        elif item.isActive == 'Activating':
                 return html.element(
                     'td',
                     content=content,
                     escape_content=False,
-                    attrs={'class': 'serviceNone'})
+                    attrs={'class': 'serviceActivating'})
+        else:
+            return html.element(
+                'td',
+                content=content,
+                escape_content=False,
+                attrs={'class': 'serviceNone'})
             
 
     
