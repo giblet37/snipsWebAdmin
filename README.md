@@ -10,6 +10,7 @@ Install this to the main RPi snips instance (not satellite devices)
     git clone https://github.com/oziee/snipsWebAdmin.git
     
     #install deps
+    sudo apt-get install gunicorn
     cd snipsWebAdmin
     pip install -r requirements.txt
     
