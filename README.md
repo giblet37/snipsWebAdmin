@@ -10,7 +10,6 @@ Install this to the main RPi snips instance (not satellite devices)
     git clone https://github.com/oziee/snipsWebAdmin.git
     
     #install deps
-    sudo apt-get install gunicorn
     cd snipsWebAdmin
     pip install -r requirements.txt
     
@@ -21,7 +20,9 @@ Install this to the main RPi snips instance (not satellite devices)
     change the MQTT settings to match as needed
     
     #start
-    ./boot.sh
+    ./boot.sh (good for using a service, also cleans up compiled pyc files for a fresh start)
+
+    else you can just use 'python snipsFlask.py' 
     
     (if it doesnt start you need to change the boot.sh to bootable.. only have to do this once)
     chmod +x boot.sh
