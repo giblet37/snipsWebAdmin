@@ -7,6 +7,6 @@ Flask-WTF
 flask-socketio
 WTForms
 paho-mqtt
+gevent
 eventlet
-
 
