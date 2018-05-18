@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:42:34 pm
 # Author: Greg
 # -----
-# Last Modified: Sat May 12 2018
+# Last Modified: Thu May 17 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -45,7 +45,7 @@ class Config:
     SECRET_KEY='Q5G94WB6RVRP4TO85RGI2Y6TM7HYY0P'
     SUDO_PASSWORD = 'raspberry'
     SSL_REDIRECT = False
-    YAMLFILE = os.path.join(basedir,"data/settings.yaml")
+    YAMLFILE = os.path.join(basedir,"data/db.yaml")
     VERSION = "0.1"
     SNIPS_TOML = "/etc/snips.toml"
     SNIPS_TOML_BACKUP = "/etc/snips.toml.bak"

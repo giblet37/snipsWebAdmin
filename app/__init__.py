@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:36:13 pm
 # Author: Greg
 # -----
-# Last Modified: Wed May 09 2018
+# Last Modified: Thu May 17 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -40,8 +40,8 @@ from flask_wtf.csrf import CSRFProtect
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
 from config import config
-import eventlet
-eventlet.monkey_patch(socket=True)
+#import eventlet
+#eventlet.monkey_patch(socket=True)
 
 
 bootstrap = Bootstrap()
@@ -91,6 +91,12 @@ def create_app(config_name):
 
     from watch import watch as watch_blueprint
     app.register_blueprint(watch_blueprint)
+
+    from devices import devices as devices_blueprint
+    app.register_blueprint(devices_blueprint)
+
+    from generator import generator as generator_blueprint
+    app.register_blueprint(generator_blueprint)
 
     return app
 

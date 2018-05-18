@@ -1,0 +1,156 @@
+Buildin:
+  - snips/datetime
+  - snips/duration
+  - snips/amountOfMoney
+  - snips/duration
+  - snips/ordinal
+  - snips/number
+  - snips/temperature
+  - snips/percentage
+
+snips/datetime:
+  - on monday
+  - on tuesday
+  - on wednesday
+  - on thursday
+  - on friday
+  - on saturday
+  - on sunday
+  - next weekend
+  - next monday
+  - next month
+  - today
+  - in one day
+  - in two days
+  - in two weeks
+  - in one week
+  - on the weekend
+  - this monday
+  - on the first of next month
+  - at 4:30 pm
+  - next monday at 8p.m.
+  - yesterday morning
+  - the 3rd tuesday of June
+  - June 2nd at 9 pm
+
+snips/amountOfMoney:
+  - ten dollars and five cents
+  - around 5€
+
+snips/duration:
+  - 3 month
+  - 4 seconds
+  - 8 years
+
+snips/ordinal:
+  - first
+  - second
+  - third
+  - fourth
+  - fifth
+  - sixth
+  - seventh
+  - eighth
+  - ninth
+  - tenth
+  - eleventh
+  - twelfth
+  - thirteenth
+  - fourteenth
+  - fifteenth
+  - sixteenth
+  - seventeenth
+  - eighteenth
+  - nineteenth
+  - twentieth
+
+snips/number:
+  - zero
+  - one
+  - two
+  - three
+  - four
+  - five
+  - six
+  - seven
+  - eight
+  - nine
+  - ten
+  - eleven
+  - twelve
+  - thirteen
+  - fourteen
+  - fifteen
+  - sixteen
+  - seventeen
+  - eighteen
+  - nineteen
+  - twenty
+  - twenty one
+  - thirty
+  - fourty
+  - one hundred
+  - three hundred
+  - 6
+  - 7.2
+  - 13
+  - 99
+  - 199
+  - 1000
+  - 2784
+  - 34.5
+  - 21.3
+
+snips/temperature:
+  - twenty three degrees celcius
+  - thirteen degrees celcius
+  - sixty seven degrees celcius
+  - twenty nine degrees celcius
+  - fourty three degrees celcius
+  - three degrees celcius
+  - one hundred degrees celcius
+  - zero degrees celcius
+  - twenty three degrees fahrenheit
+  - twenty five degrees fahrenheit
+  - thirteen degrees fahrenheit
+  - sixty one degrees fahrenheit
+  - twenty two degrees fahrenheit
+  - fourty four degrees fahrenheit
+  - six degrees fahrenheit
+  - one hundred degrees fahrenheit
+  - zero degrees fahrenheit
+  - 13°C
+  - 23°C
+  - 53°C
+  - 3°F
+  - 19°F
+  - 104°F
+
+snips/percentage:
+  - twenty percent
+  - five percent
+  - ten percent
+  - sixty percent
+  - twenty seven percent
+  - one hundred percent
+  - two hundred percent
+  - thirty nine percent
+  - eighty three percent
+  - 25%
+  - 2%
+  - 45%
+  - 11%
+  - 19%
+  - 0%
+  - 99%
+  - 100%
+  - 350%
+  - 56%
+  - 8%
+
+Custom:
+  - locations
+      
+locations:
+  - New York, NY, New York City
+  - LA, la, las vegas

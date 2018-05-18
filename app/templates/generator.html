@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+
+{% block title %}Snips - Generator{% endblock %}
+
+{% block page_content %}
+<script src="{{ url_for('static', filename='randomColor.js') }}"></script>
+<style>
+    .table {margin-bottom: 0px;}
+    .card-header {padding: 3px 10px 5px 10px;}
+    .highlight{background:red;}
+    /*.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {background-color: #F8F8F8;}*/
+    .table th, .table td {vertical-align: middle;padding: 5px;}
+    table.table-sm tr:hover td {background-color: #F8F8F8;}
+    table.table-sm tr img {visibility:hidden;}
+    table.table-sm tr:hover img.ok {visibility:visible; cursor: pointer;}
+    .form-control.error{border-color: #f20913;  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(242, 9, 19, 0.6); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(242, 9, 19, 0.6);}  
+    .form-control.ok{ border-color: #3ce850;  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 232, 80, 0.6); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 232, 80, 0.6);} 
+
+    .modal-header {display: inline-block; padding-left: 15px; padding-top: 15px; padding-bottom: 0px;}
+    p {font-size: 12px;}
+
+    /* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-bottom: 0px;
+  margin-top: 5px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {display:none;}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: rgb(62, 209, 99);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px rgb(62, 209, 99);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+</style>
+
+<div class="page-header">
+   
+</div>
+<input type="hidden" id="slotsList" name="variable" value="{{ slotsList|safe }}">
+<div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <table class="table table-borderless table-sm">
+                <tr>
+                    <td style="vertical-align: middle">
+                        <b>Slots</b>
+                    </td>
+                    <td style=" text-align: right">
+                        <button class="btn btn-secondary btn-sm" type="button" id="btnAddSlot" onclick="addSlot(this)" value="Add Slot">
+                            Add Slot
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-body">
+            <form class="needs-validation was-validated" novalidate>
+                <table id="slotsTable" style="width: 100%;" class="table table-sm">
+
+                </table>
+            </form>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <table class="table table-borderless table-sm">
+                <tr>
+                    <td style="vertical-align: middle">
+                        <b>Sentences</b>
+                    </td>
+                    <td style=" text-align: right">
+                        <button class="btn btn-success btn-sm" type="button" id="btnGenerate" onclick="generate(this)" value="Generate">
+                            Generate
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-body">
+            <textarea id="tb" style="width:100%; height:250px;"></textarea>
+        </div>
+    </div>
+    
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <ul class="nav nav-pills ml-2 mt-1 card-header-pills" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="output-tab" data-toggle="tab" href="#output" role="tab" aria-controls="output" aria-selected="true">Visual Output</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="code-tab" data-toggle="tab" href="#code" role="tab" aria-controls="code" aria-selected="false">Console Code</a>
+                </li>
+            </ul>
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane card-body active" id="output" role="tabpanel" aria-labelledby="output-tab">
+                <div id="html">Generated data will display here</div>
+                
+            </div>
+            <div class="tab-pane card-body" id="code" role="tabpanel" aria-labelledby="code-tab">
+                    <div id="codebody">Generated data will display here</div>
+                    
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Edit Slot -->
+<div class="modal fade" id="modalEditSlot" tabindex="-1" role="dialog" aria-labelledby="modalEditSlotTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalEditSlotTitle">Edit Slot</h5>
+            <p class="font-weight-light">Format:<br>name_1, synonym_1_1, synonym_1_2, synonym_1_3.<br>One slot type value per line.</p>
+        </div>
+        <div class="modal-body">
+            <textarea id="slottb" style="width:100%; height:220px;"></textarea>
+        </div>
+        <div class="modal-footer">
+            <button id="modelclosebutton" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="modelsavebutton" type="button" class="btn btn-primary" onclick="saveSlotInfo(this)">Save changes</button>
+        </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Add New Slot -->
+<div class="modal fade" id="modalNewSlot" tabindex="-1" role="dialog" aria-labelledby="modalNewSlotTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalNewSlotTitle">New Slot</h5>
+            <p class="font-weight-light">Format:<br>name_1, synonym_1_1, synonym_1_2, synonym_1_3.<br>One slot type value per line.</p>
+        </div>
+        <div class="modal-body">
+            <form class="needs-validation was-validated" novalidate>
+                <input id="newSlotTitle" autofocus required class="form-control" type="text" placeholder="Slot Title" onkeypress="validate(event)"><br>
+                <textarea id="newslottb" style="width:100%; height:220px;"></textarea>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button id="modelclosebutton" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button id="modelsavebutton" type="button" class="btn btn-primary" onclick="saveNewSlot(this)">Add Slot</button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+    var socket = io.connect('http://' + document.domain + ':' + location.port + '/generator');
+    var rownum = 0;
+    var editingSlotName = '';
+    var dropb = '';
+
+
+    //add a new table row for slot info
+    function addSlot(ctl) {
+        var table = document.getElementById("slotsTable");
+        var row = table.insertRow();
+        row.id = "row" + rownum;
+      
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        //var cell3 = row.insertCell(2);
+        //var cell4 = row.insertCell(3);
+        //var cell5 = row.insertCell(4);
+        var c = randomColor({luminosity: 'light',format: 'hex'});
+        cell1.id = c;
+        cell1.style.backgroundColor = c;
+        //cell1.style.width = '1%';
+
+        var slotsList = document.getElementById("slotsList");
+
+        var d = '';
+        d = "<div class='dropdown'>";
+        d += "<button class='btn mt-1 w-100 btn-outline-secondary dropdown-toggle' type='button' id='dropdownMenu" + rownum + "' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Choose slot type</button>";
+        d += " <ul class='dropdown-menu' aria-labelledby='dropdownMenu" + rownum + "'>";
+        d += slotsList.value;
+        d += "<li><div class='dropdown-divider'></div></li>"
+        d += "<li><a class='dropdown-item' href='#' onclick='anclicked(this)' data-toggle='modal' data-target='#modalNewSlot' data-value='New Slot Type'>New Slot Type</a></li>";
+        d += "</ul>";
+        d += "</div>";
+
+
+        var s = '';
+        s = "<div class='row no-gutters'>";
+        s += "<div class='col-3 mr-2'><input required class='form-control mt-1' type='text' placeholder='Label' onkeypress='validate(event)'></div>";
+        s += "<div class='col-3 mr-2'>" + d + "</div>";
+        s += "<div class='col-auto mt-1 mr-2' style='visibility:hidden;'><img class='mt-1' src='/static/edit.png' alt='bin' height='25' width='25'  data-toggle='modal' data-target='#modalEditSlot' data-whatever='dropdownMenu" + rownum + "'></div>";
+        s += "<div class='col mr-2'><label style='margin-bottom:0px;' class='switch'><input type='checkbox' onclick='switchChange(this);'><span class='slider round'></span></label></div>";
+        s += "<div class='col-4 mr-2'><input class='form-control mt-1' type='text' style='visibility:hidden' onkeypress='validate2(event)'></div>";
+        s += "<div class='col mt-1' style='text-align: right;'><img class='mt-1 ok' src='/static/trash.png' alt='bin' height='25' width='25' onclick='deleteRow(this)'></div>";
+        s += "</div>";
+
+       
+        cell2.style.width = '99%';
+        cell2.innerHTML = s;
+
+        rownum++;
+    }
+
+
+    function dropClicked(btn) {
+        var id = $(btn).parent().parent().attr("aria-labelledby");
+
+        var t = $(btn).text();
+        var n = t.startsWith("snips/");
+
+        var editdiv = $(btn).parent().parent().parent().parent().parent().parent().find("img")[0];
+        if (n == false) {
+            editdiv.style = "visibility:visible;"
+        } else {
+            editdiv.style = "visibility:hidden;"
+        }
+
+        $("#"+id+":first-child").text(t);
+        $("#"+id+":first-child").val(t);
+    }
+
+    function myDeleteFunction() {
+        document.getElementById("myTable").deleteRow(0);
+    }
+
+    function anclicked(btn) {
+        dropb = $(btn).parent().parent().attr("aria-labelledby");
+        document.getElementById("newSlotTitle").focus();
+    }
+
+    function deleteRow(btn) {
+        var row = btn.parentNode.parentNode.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+    function saveSlotInfo(btn) {
+        var ed = document.getElementById('slottb');
+
+        socket.emit('saveslot', {heading:editingSlotName, slotinfo:ed.value });
+        $('#modalEditSlot').modal('hide');
+        
+    }
+
+    function editSlotValues(btn) {
+        $('#modalEditSlot').modal({
+            backdrop: 'static',
+            keyboard: false
+        })
+    }
+
+    function saveNewSlot(btn) {
+        var title = document.getElementById("newSlotTitle").value;
+        if (title.length == 0) {
+            alert('Needs a Slot Title!');
+            document.getElementById("newSlotTitle").focus();
+        } else {
+            var ed = document.getElementById('newslottb');
+
+            $("#"+dropb+":first-child").text(title);
+            $("#"+dropb+":first-child").val(title);
+
+            var imgdiv = $("#"+dropb).parent().parent().parent().parent().parent().parent().find("img")[0];
+            imgdiv.style = "visibility:visible;"
+            
+            document.getElementById("newSlotTitle").value = '';
+            $('#modalNewSlot').modal('hide');
+
+            socket.emit('getSlotDropdownList', {heading:title, slotinfo:ed.value });
+        }
+    }
+
+    $('#modalEditSlot').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        //console.log(event);
+        //console.log(button.data('whatever'));
+        //var recipient = button.data('whatever') // Extract info from data-* attributes
+        var recipient = button.data('whatever');
+        //console.log(recipient);
+        var ed = document.getElementById(recipient);
+        editingSlotName = ed.value;
+        //console.log(ed);
+        var modal = $(this);
+        //var s = $("#"+button.data('whatever')+":first-child").text(t);
+        modal.find('.modal-title').text('Slot - ' + ed.value);
+        modal.find('.modal-body input').val(ed.value);
+
+        $.ajax({
+            data : JSON.stringify({ heading: ed.value}),
+            type : 'POST',
+            url : '/slotValues',
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(data){  
+                var thisSession = data;
+                modal.find('#slottb').val(data['good']);
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                alert("Error: " + errorThrown); 
+                modal.find('#modelsavebutton').prop('disabled', true);
+                
+            }  
+        })
+    })
+
+    function switchChange(btn) {
+        var td = btn.parentNode.parentNode.parentNode;
+        var x = td.getElementsByClassName("form-control")[1];
+        if (btn.checked == true) {
+            x.style = "visibility:visible";
+        } else {
+            x.style = "visibility:hidden";
+        }
+    }
+
+    function validate(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode( key );
+
+        var regex = /^[a-zA-Z0-9_-]+$/;
+        if( !regex.test(key) ) {
+            theEvent.returnValue = false;
+            if(theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+    function validate2(evt) {
+        var theEvent = evt || window.event;
+        var key = theEvent.keyCode || theEvent.which;
+        key = String.fromCharCode( key );
+
+        var regex = /^[a-zA-Z0-9-,?! ]+$/;
+        if( !regex.test(key) ) {
+            theEvent.returnValue = false;
+            if(theEvent.preventDefault) theEvent.preventDefault();
+        }
+    }
+
+    //dont remove
+    function resize(){}
+
+    //socket returning new slot dropdown list
+    socket.on('slotsDropDownList', function (msg) {
+        //console.log("meg back");
+        var slotsList = document.getElementById("slotsList");
+        slotsList.value = msg['html'];
+    });
+
+    //socket returning info
+    socket.on('resultscode', function (msg) {
+        var ed = document.getElementById("html");
+        ed.innerHTML = msg['html'];
+
+        ed = document.getElementById("codebody");
+        ed.innerHTML = msg['code'];
+        //ed.scrollTop = ed.scrollHeight;
+    });
+
+    function generate(btn) {
+        var go = false;
+        var slots = {};
+        try {
+            $('#slotsTable tr').each(function(){
+                go = true;
+                //console.log($(this));
+                //console.log($(this).prop('id'));
+
+                var td1 = $(this).find('td')[0];
+                //console.log(td1.id); //color
+
+                var td2 = $(this).find('td').find('input')[0];
+                //console.log(td2.value);
+                if (td2.value.length == 0) {
+                    throw "Each Slot entity must have a label!";
+                }
+
+                var b = $(this).find('td').find('button')[0];
+                var slotval = $("#"+b.id+":first-child").val();
+                //console.log(slotval);
+                if (slotval.length == 0) {
+                    throw "Each Slot entity must have a Slot Type selected!";
+                }
+
+                //checkbox required
+                var c = $(this).find('td').find('input')[1];
+                if (c.checked) {
+                    //then each line in the examples must have the label in it
+                    var arrayOfLines = $('#tb').val().split('\n');
+                    $.each(arrayOfLines, function(index, item) {
+                        if (item.indexOf("$" + td2.value) ==-1) {
+                            throw td2.value + " is a required value. Items in your sentences are missing this slot!";
+                        }
+                    });
+                }
+
+                // required say text
+                var t = $(this).find('td').find('input')[2].value;
+
+                //add rows data to the dict
+                var gg = 'false';
+                if (c.checked) {
+                    gg = 'true';
+                }
+                slots[$(this).prop('id')] = {"color":td1.id, "label":td2.value, "slot":slotval, "required":gg, "text":t };
+            
+            })
+        } catch (e) {
+            alert(e);
+            go = false;
+        }
+        if (go) {
+            //console.log('keep working!!');
+            if ($('#tb').val() == '') {
+                alert('No have not sentences created!')
+            } else {
+                //we work!!!
+                //console.log(slots);
+                slots["sentences"] = $('#tb').val();
+                socket.emit('generate', slots);
+            }
+        }
+    }
+
+
+
+</script>
+{% endblock %}

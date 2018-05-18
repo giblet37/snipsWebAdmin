@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:12:41 pm
 # Author: Greg
 # -----
-# Last Modified: Sat May 12 2018
+# Last Modified: Thu May 17 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -42,13 +42,13 @@ if os.environ.get('FLASK_COVERAGE'):
     COV.start()
 
 import sys
-import click
+#import click
 
 from app import create_app, get_socketio
 import eventlet
 eventlet.monkey_patch()
 
-app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+app = create_app('default')
 sock = get_socketio()
 
 
@@ -56,7 +56,7 @@ sock = get_socketio()
 #def inject_version():
 #    return dict(version=app.config['VERSION'])
 
-sock.run(app, host='0.0.0.0', port=5000, log_output=True)
+sock.run(app, host='0.0.0.0', port=7000, log_output=True) #, use_reloader=True)
 
 
 #@app.cli.command()

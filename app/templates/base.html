@@ -22,9 +22,9 @@
             <li class="active"><a class="nav-link" href="/">Home</a></li>
             <li><a class="nav-link" href="{{ url_for('watch.watch') }}">Watch</a></li>
             <li>
-                <a class="nav-link" href="#">Devices</a>
+                <a class="nav-link" href="{{ url_for('devices.devicePage') }}">Devices</a>
             </li>
-            <li><a class="nav-link" href="#">Generator</a></li>
+            <li><a class="nav-link" href="{{ url_for('generator.generatorPage') }}">Generator</a></li>
             
         </ul>
     </div>

@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+ 
 """Flask-MQTT Package.
 
 :author: Stefan Lehmann <stlm@posteo.de>

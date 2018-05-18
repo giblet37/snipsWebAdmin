@@ -4,7 +4,7 @@
 ### **************************************************************************** ###
 # 
 # Project: Snips Web Admin
-# Created Date: Friday, April 27th 2018, 7:44:36 pm
+# Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
 # Last Modified: Thu May 17 2018
@@ -33,35 +33,34 @@
 
 
 
-from flask import render_template, request, jsonify
-from . import watch
+from flask import render_template, redirect, url_for, current_app, jsonify,request,Response
+from flask_table import Table, Col, html 
+from . import devices
+from app import mqtt,mqttYaml,socketio
+from flask_socketio import emit
+import utils
+import os
+import json
+import subprocess
+import string
 
 
-@watch.app_errorhandler(403)
-def forbidden(e):
-    if request.accept_mimetypes.accept_json and \
-            not request.accept_mimetypes.accept_html:
-        response = jsonify({'error': 'forbidden'})
-        response.status_code = 403
-        return response
-    return render_template('403.html'), 403
+
+@devices.route('/devices')
+def devicePage():
+    
+    return render_template('devices.html')
+
+@devices.route('/deviceslist', methods=['GET'])
+def devicePageList():
+    
+    return "<p>greg</p>"
+
+'''
+poprn 
+
+#ip's of devices connected to port 1883 - multiples of same name for use is not key add to dict
+netstat | grep :1883 | awk '{print $5}' | cut -d ":" -f1
 
 
-@watch.app_errorhandler(404)
-def page_not_found(e):
-    if request.accept_mimetypes.accept_json and \
-            not request.accept_mimetypes.accept_html:
-        response = jsonify({'error': 'not found'})
-        response.status_code = 404
-        return response
-    return render_template('404.html'), 404
-
-
-@watch.app_errorhandler(500)
-def internal_server_error(e):
-    if request.accept_mimetypes.accept_json and \
-            not request.accept_mimetypes.accept_html:
-        response = jsonify({'error': 'internal server error'})
-        response.status_code = 500
-        return response
-    return render_template('500.html'), 500
+'''
