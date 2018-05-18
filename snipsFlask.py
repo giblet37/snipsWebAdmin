@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:12:41 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 17 2018
+# Last Modified: Fri May 18 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -56,7 +56,7 @@ sock = get_socketio()
 #def inject_version():
 #    return dict(version=app.config['VERSION'])
 
-sock.run(app, host='0.0.0.0', port=7000, log_output=True) #, use_reloader=True)
+sock.run(app, host='0.0.0.0', port=5000, log_output=True) #, use_reloader=True)
 
 
 #@app.cli.command()
