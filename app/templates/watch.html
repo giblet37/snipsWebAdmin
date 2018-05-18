@@ -7,12 +7,13 @@
     html, body { height: 100%; margin: 0; padding: 0; }
     .container { display: table; }
     .content { height: 100%; }
+    #card-body {padding: 0px;} 
     #editor { display: block; overflow: hidden; overflow-y:scroll; padding: 10px;  min-height: 100%; resize: none;background-color: white; color: black; font-size: 14px; font-family: monospace;}
     .container { width: 100%; padding-right: 0px; padding-left: 0px;}
     .table {margin-bottom: 0px;}
     .card-header {padding: 3px 10px 5px 10px;}
     .form-control:disabled {background-color: #fff; color: black}
-    .card {background-color: rgba(0, 0, 0, 0.03);}
+   
 
     .eTR {width: 100%;}
     .eTDL {width: 49%; text-align: right; color: darkblue;}
@@ -79,7 +80,7 @@
         <table class="table table-borderless table-sm">
             <tr>
                 <td style="vertical-align: middle">
-                        Snips Watch
+                        <b>Snips Watch</b>
                 </td>
                 <td style=" text-align: right">
                     <button class="btn btn-secondary btn-sm" type="button" id="btnclear" onclick="btnClearMQTTMessagesClickHandler()">
@@ -162,11 +163,11 @@
         var heights = window.innerHeight;
         var top = $("#card-body").position();
         var makeit = heights - top.top - 90;
-        var makeit1 = heights - top.top - 130;
+        //var makeit1 = heights - top.top - 130;
         document.getElementById("card-body").style.height = makeit + "px";
         var ed = document.getElementById("editor");
-        ed.style.maxHeight = makeit1 + "px";
-        ed.style.height = makeit1 + "px";
+        ed.style.maxHeight = makeit + "px";
+        ed.style.height = makeit + "px";
         ed.scrollTop = ed.scrollHeight;
     }
     resize();
