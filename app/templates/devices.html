@@ -3,26 +3,11 @@
 {% block title %}Snips - Devices{% endblock %}
 
 {% block page_content %}
-<button id="btn" onclick="btnUpdateClick()">press me</button>
+
 <div id="test">
-    
+    Still Under Development :)
 </div>
 
-<script>
-    function btnUpdateClick() {
-        
-        $.ajax({
-          url: "/deviceslist",
-          type: "get",
-          success: function(response) {
-            console.log(response)
-            $("#test").html(response);
-          },
-          error: function(xhr) {
-            //Do Something to handle error
-          }
-        });
-    };
-    </script>
+
 
 {% endblock %}
