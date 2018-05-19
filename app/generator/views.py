@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 18 2018
+# Last Modified: Sat May 19 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -124,6 +124,7 @@ def generate(data):
     global db
 
     sentences = data['sentences'].split("\n")
+    sentences = filter(None, sentences)
     items = {}
     built = []
     stg = ''
@@ -163,6 +164,8 @@ def generate(data):
                     consoletext += ", {}".format(value['text'])
             consoletext += '<br>'
 
+
+
     keys, values = zip(*items.items())
     for v in itertools.product(*values):
         experiment = dict(zip(keys, v))
@@ -175,22 +178,26 @@ def generate(data):
     # {"color":td1.id, "label":td2.value, "slot":slotval, "required":c.checked, "text":t };
     #[text](slotName) 
     #date, snips/datetime, true, whats the date
-
+    dictcheck = []
     for builtitems in built:
         for sent in sentences:
-            temp = sent
+            temp1 = sent
+            temp2 = sent
             for key, value in builtitems.iteritems():
-                print("{} : {}".format(key,value))
+                #print("{} : {}".format(key,value))
                 f = "${}".format(key)
                 m = "<span style='background-color: " + colors[key] + "'>" + value + "</span>"
                 c = "[{}]({})".format(value,key)
-                temp = temp.replace(f,c)
-                sent = sent.replace(f,m)
-            stg += sent + "<br>"
-            consoletext += temp + "<br>"
+                temp1 = temp1.replace(f,c)
+                temp2 = temp2.replace(f,m)
+            
+            if temp1 not in dictcheck:
+                dictcheck.append(temp1)
+                stg += temp2 + "<br>"
+                consoletext += temp1 + "<br>"
 
 
-    socketio.emit('resultscode', {"code":consoletext,"html":stg}, namespace='/generator')
+    socketio.emit('resultscode', {"code":consoletext,"html":stg, "count":len(dictcheck)}, namespace='/generator')
 
 def saveslot(data):
     global db

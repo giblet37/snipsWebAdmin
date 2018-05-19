@@ -138,6 +138,9 @@ input:checked + .slider:before {
                 <li class="nav-item">
                     <a class="nav-link" id="code-tab" data-toggle="tab" href="#code" role="tab" aria-controls="code" aria-selected="false">Console Code</a>
                 </li>
+                <li class="nav-item">
+                        <a id="counter" class="nav-link disabled" href="#"></a>
+                </li>
             </ul>
         </div>
         <div class="tab-content">
@@ -410,12 +413,15 @@ input:checked + .slider:before {
 
     //socket returning info
     socket.on('resultscode', function (msg) {
+        console.log("comes back")
         var ed = document.getElementById("html");
         ed.innerHTML = msg['html'];
 
         ed = document.getElementById("codebody");
         ed.innerHTML = msg['code'];
-        //ed.scrollTop = ed.scrollHeight;
+        
+        var countcontrol = document.getElementById("counter");
+        countcontrol.innerHTML = msg['count'] + " items generated";
     });
 
     function generate(btn) {
@@ -473,7 +479,7 @@ input:checked + .slider:before {
         if (go) {
             //console.log('keep working!!');
             if ($('#tb').val() == '') {
-                alert('No have not sentences created!')
+                alert('There are no sentences created!')
             } else {
                 //we work!!!
                 //console.log(slots);

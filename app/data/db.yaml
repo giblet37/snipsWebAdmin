@@ -36,11 +36,17 @@ snips/datetime:
 snips/amountOfMoney:
   - ten dollars and five cents
   - around 5€
+  - two dollars
+  - five dollars and twenty seven cents
 
 snips/duration:
   - 3 month
   - 4 seconds
   - 8 years
+  - 7 days
+  - one day
+  - seven months
+  - three years
 
 snips/ordinal:
   - first
@@ -63,6 +69,7 @@ snips/ordinal:
   - eighteenth
   - nineteenth
   - twentieth
+  - one hundredth
 
 snips/number:
   - zero
@@ -91,6 +98,7 @@ snips/number:
   - fourty
   - one hundred
   - three hundred
+  - nine thousand three hundred and fourty nine
   - 6
   - 7.2
   - 13
@@ -151,7 +159,6 @@ snips/percentage:
 Custom:
   - locations
       
-
 locations:
   - New York, NY, New York City
   - LA, la, las vegas
