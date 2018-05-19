@@ -1,5 +1,9 @@
 # snipsWebAdmin
 Web based administrative system for Snips devices
+Check out a short video on what this does and how to use it
+https://youtu.be/gGwnzSOB9Nc
+
+
 
 Install this to the main RPi snips instance (not satellite devices)
 
