@@ -125,9 +125,12 @@ class Mqtt():
             )
         
         self.client.loop_start()
-        self.client.connect(
-            self.broker_url, self.broker_port, keepalive=self.keepalive
-        )
+        try:
+            self.client.connect(
+                self.broker_url, self.broker_port, keepalive=self.keepalive
+            )
+        except Exception as e:
+            print("Error connecting to MQTT Server - {}".format(e))
         
 
     def _disconnect(self):
