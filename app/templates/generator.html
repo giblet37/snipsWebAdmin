@@ -234,7 +234,7 @@ input:checked + .slider:before {
         s = "<div class='row no-gutters'>";
         s += "<div class='col-3 mr-2'><input required class='form-control mt-1' type='text' placeholder='Label' onkeypress='validate(event)'></div>";
         s += "<div class='col-3 mr-2'>" + d + "</div>";
-        s += "<div class='col-auto mt-1 mr-2' style='visibility:hidden;'><img class='mt-1' src='/static/edit.png' alt='bin' height='25' width='25'  data-toggle='modal' data-target='#modalEditSlot' data-whatever='dropdownMenu" + rownum + "'></div>";
+        s += "<div class='col-auto mt-1 mr-2' style='visibility:hidden;'><img class='mt-1' src='/static/edit.png' alt='edit' height='25' width='25'  data-toggle='modal' data-target='#modalEditSlot' data-whatever='dropdownMenu" + rownum + "'></div>";
         s += "<div class='col mr-2'><label style='margin-bottom:0px;' class='switch'><input type='checkbox' onclick='switchChange(this);'><span class='slider round'></span></label></div>";
         s += "<div class='col-4 mr-2'><input class='form-control mt-1' type='text' style='visibility:hidden' onkeypress='validate2(event)'></div>";
         s += "<div class='col mt-1' style='text-align: right;'><img class='mt-1 ok' src='/static/trash.png' alt='bin' height='25' width='25' onclick='deleteRow(this)'></div>";
@@ -300,18 +300,20 @@ input:checked + .slider:before {
             alert('Needs a Slot Title!');
             document.getElementById("newSlotTitle").focus();
         } else {
-            var ed = document.getElementById('newslottb');
+            var ed = document.getElementById('newslottb').value;
 
             $("#"+dropb+":first-child").text(title);
             $("#"+dropb+":first-child").val(title);
 
-            var imgdiv = $("#"+dropb).parent().parent().parent().parent().parent().parent().find("img")[0];
+            var imgdiv = $("#"+dropb).parent().parent().parent().parent().parent().find("img")[0];
+          
             imgdiv.style = "visibility:visible;"
             
             document.getElementById("newSlotTitle").value = '';
+            document.getElementById('newslottb').value = '';
             $('#modalNewSlot').modal('hide');
 
-            socket.emit('getSlotDropdownList', {heading:title, slotinfo:ed.value });
+            socket.emit('getSlotDropdownList', {heading:title, slotinfo:ed });
         }
     }
 
@@ -387,8 +389,23 @@ input:checked + .slider:before {
     //socket returning new slot dropdown list
     socket.on('slotsDropDownList', function (msg) {
         //console.log("meg back");
+     
         var slotsList = document.getElementById("slotsList");
         slotsList.value = msg['html'];
+
+        d = '';
+        d += slotsList.value;
+        d += "<li><div class='dropdown-divider'></div></li>";
+        d += "<li><a class='dropdown-item' href='#' onclick='anclicked(this)' data-toggle='modal' data-target='#modalNewSlot' data-value='New Slot Type'>New Slot Type</a></li>";
+        d += "</ul>";
+
+        var x = document.getElementsByClassName("dropdown-menu");
+        var i;
+        for (i = 0; i < x.length; i++) {
+            x[i].innerHTML = d;
+        }
+
+        
     });
 
     //socket returning info
