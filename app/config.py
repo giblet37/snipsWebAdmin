@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:42:34 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 17 2018
+# Last Modified: Sun May 20 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -51,6 +51,7 @@ class Config:
     SNIPS_TOML_BACKUP = "/etc/snips.toml.bak"
     SNIPS_ASSISTANT_SNIPSFILE = '/usr/share/snips/assistant/Snipsfile.yaml'
     SNIPS_ASSISTANT_ASSISTANTFILE = '/usr/share/snips/assistant/assistant.json'
+    SNIPS_ASSISTANT_SNIPPETDIR = '/usr/share/snips/assistant/snippets'
     WTF_CSRF_ENABLED = False
     USER_MQTT_SETTINGS = os.path.join(os.path.dirname(basedir),"settings.yaml")
 
