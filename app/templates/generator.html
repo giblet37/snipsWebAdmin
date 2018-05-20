@@ -11,7 +11,7 @@
     /*.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {background-color: #F8F8F8;}*/
     .table th, .table td {vertical-align: middle;padding: 5px;}
     table.table-sm tr:hover td {background-color: #F8F8F8;}
-    table.table-sm tr img {visibility:hidden;}
+    table.table-sm tr img {visibility:hidden;cursor: pointer;}
     table.table-sm tr:hover img.ok {visibility:visible; cursor: pointer;}
     .form-control.error{border-color: #f20913;  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(242, 9, 19, 0.6); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(242, 9, 19, 0.6);}  
     .form-control.ok{ border-color: #3ce850;  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 232, 80, 0.6); box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 232, 80, 0.6);} 
@@ -255,14 +255,9 @@ input:checked + .slider:before {
         var id = $(btn).parent().parent().attr("aria-labelledby");
 
         var t = $(btn).text();
-        var n = t.startsWith("snips/");
 
         var editdiv = $(btn).parent().parent().parent().parent().parent().parent().find("img")[0];
-        if (n == false) {
-            editdiv.style = "visibility:visible;"
-        } else {
-            editdiv.style = "visibility:hidden;"
-        }
+        editdiv.style = "visibility:visible;"
 
         $("#"+id+":first-child").text(t);
         $("#"+id+":first-child").val(t);
@@ -275,6 +270,7 @@ input:checked + .slider:before {
     function anclicked(btn) {
         dropb = $(btn).parent().parent().attr("aria-labelledby");
         document.getElementById("newSlotTitle").focus();
+        
     }
 
     function deleteRow(btn) {

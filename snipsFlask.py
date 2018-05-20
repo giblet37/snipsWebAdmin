@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:12:41 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 18 2018
+# Last Modified: Sun May 20 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -34,6 +34,16 @@
 
 
 import os
+import sys
+from shutil import copyfile
+
+
+
+if os.path.isfile('./settings.yaml') == False:
+    copyfile('./settings.yaml.conf', './settings.yaml')
+
+if os.path.isfile('./app/data/db.yaml') == False:
+    copyfile('./app/data/db.yaml.conf', './app/data/db.yaml')
 
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
@@ -41,8 +51,6 @@ if os.environ.get('FLASK_COVERAGE'):
     COV = coverage.coverage(branch=True, include='app/*')
     COV.start()
 
-import sys
-#import click
 
 from app import create_app, get_socketio
 import eventlet
@@ -52,18 +60,5 @@ app = create_app('default')
 sock = get_socketio()
 
 
-#@app.context_processor
-#def inject_version():
-#    return dict(version=app.config['VERSION'])
-
 sock.run(app, host='0.0.0.0', port=5000, log_output=True) #, use_reloader=True)
 
-
-#@app.cli.command()
-#@click.option('--length', default=25,
-#              help='Number of functions to include in the profiler report.')
-#@click.option('--profile-dir', default=None,
-#              help='Directory where profiler data files are saved.')
-#def profile(length, profile_dir):   
-#    sock.run(app, host='0.0.0.0', port=5000, log_output=True)
-   
