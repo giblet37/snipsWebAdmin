@@ -133,6 +133,34 @@ class ItemTable(Table):
         
     )
 
+class SkillsItem(object):
+    def __init__(self, name, url):
+        self.name = name
+        self.url = url
+
+class SkillsItemTable(Table):
+    no_items = 'Nothing to show'
+    classes = ['table']
+    name = Col(
+        'Skill',
+        # Apply this class to both the th and all tds in this column
+        column_html_attrs={'class': 'my-name-class'},
+        th_html_attrs={'class': 'table-active'},
+    )
+    url = Col(
+        'URL', 
+        # Apply these to both
+        column_html_attrs={
+            'data-something': 'my-data',
+            'class': 'my-description-class'},
+        # Apply this to just the th
+        th_html_attrs={'class': 'table-active'},
+        # Apply this to just the td - note that this will things from
+        # overwrite column_html_attrs.
+        td_html_attrs={'data-something': 'my-td-only-data'},
+        
+    )
+
 class SnippetItem(object):
     def __init__(self, name):
         self.name = name
@@ -233,7 +261,7 @@ def get_assistant_table():
     assitantdict = utils.get_assistant_info_(current_app.config['SNIPS_ASSISTANT_SNIPSFILE'])
     #print(assitantdict)
     snippets_items = []
-    snippets_item = os.listdir(current_app.config['SNIPS_ASSISTANT_SNIPPETDIR'])
+    snippets_item = [f for f in os.listdir(current_app.config['SNIPS_ASSISTANT_SNIPPETDIR']) if not f.startswith('.')]
     for si in snippets_item:
         snippets_items.append(SnippetItem(name=si))
 
@@ -241,13 +269,14 @@ def get_assistant_table():
     assistant_slots = []
     for key, value in assitantdict.items():
         if key == "slots":
-            assistant_slots.append(value)
+            for v in value:
+                assistant_slots.append(SkillsItem(v['name'],v['url']))
         elif value != '':
             assistant_items.append(Item(key, value))
 
-
+    
     table_assistant = ItemTable(assistant_items)
-    table_slots = ItemTable(assistant_slots)
+    table_slots = SkillsItemTable(assistant_slots)
     table_slots.no_items = "No Skills have been included in the assistant file"
     table_snippets = SnippetItemTable(snippets_items)
     table_snippets.no_items = "No Snippets to list"
