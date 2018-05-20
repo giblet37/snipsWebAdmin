@@ -218,7 +218,7 @@ def get_assistant_table():
     #base info from file
     assitantdict = utils.get_assistant_info_(current_app.config['SNIPS_ASSISTANT_SNIPSFILE'])
     #print(assitantdict)
-    snippets_items = os.listdir(current_app.config['SNIPS_ASSISTANT_ASSISTANTFILE'])
+    snippets_items = os.listdir(current_app.config['SNIPS_ASSISTANT_SNIPPETDIR'])
     assistant_items = []
     assistant_slots = []
     for key, value in assitantdict.items():
