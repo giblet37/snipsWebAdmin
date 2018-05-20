@@ -133,6 +133,20 @@ class ItemTable(Table):
         
     )
 
+class SnippetItem(object):
+    def __init__(self, name):
+        self.name = name
+
+class SnippetItemTable(Table):
+    no_items = 'Nothing to show'
+    classes = ['table']
+    name = Col(
+        'Snippet Directories',
+        # Apply this class to both the th and all tds in this column
+        column_html_attrs={'class': 'my-name-class'},
+        th_html_attrs={'class': 'table-active'},
+    )
+
 def refreshSysLog(data):
     #send the newest tail of /var/log/syslog to the page to show
     socketio.emit('log', loadsyslog(), namespace='/toml')
@@ -221,7 +235,8 @@ def get_assistant_table():
     snippets_items = []
     snippets_item = os.listdir(current_app.config['SNIPS_ASSISTANT_SNIPPETDIR'])
     for si in snippets_item:
-        snippets_items.append(Item("name", si))
+        snippets_items.append(SnippetItem(name=si))
+
     assistant_items = []
     assistant_slots = []
     for key, value in assitantdict.items():
@@ -234,7 +249,7 @@ def get_assistant_table():
     table_assistant = ItemTable(assistant_items)
     table_slots = ItemTable(assistant_slots)
     table_slots.no_items = "No Skills have been included in the assistant file"
-    table_snippets = ItemTable(snippets_items)
+    table_snippets = SnippetItemTable(snippets_items)
     table_snippets.no_items = "No Snippets to list"
     return table_assistant, table_slots, table_snippets
 
