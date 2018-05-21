@@ -1,2 +1,13 @@
 *.pyc
 *.yaml
+
+.vscode/*
+#!.vscode/settings.json
+#!.vscode/tasks.json
+#!.vscode/launch.json
+#!.vscode/extensions.json
+
+# OSX hidden files
+.DS_Store
+app/data/db.yaml
+settings.yaml
