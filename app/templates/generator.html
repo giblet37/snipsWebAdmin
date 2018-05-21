@@ -167,6 +167,7 @@ input:checked + .slider:before {
             <textarea id="slottb" style="width:100%; height:220px;"></textarea>
         </div>
         <div class="modal-footer">
+            <button id="modeldeletebutton" type="button" class="btn btn-danger mr-auto" onclick="deleteSlotInfo(this)">Delete</button>
             <button id="modelclosebutton" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button id="modelsavebutton" type="button" class="btn btn-primary" onclick="saveSlotInfo(this)">Save changes</button>
         </div>
@@ -202,6 +203,7 @@ input:checked + .slider:before {
     var rownum = 0;
     var editingSlotName = '';
     var dropb = '';
+    var ddl = '';
 
 
     //add a new table row for slot info
@@ -253,7 +255,7 @@ input:checked + .slider:before {
 
     function dropClicked(btn) {
         var id = $(btn).parent().parent().attr("aria-labelledby");
-
+     
         var t = $(btn).text();
 
         var editdiv = $(btn).parent().parent().parent().parent().parent().parent().find("img")[0];
@@ -261,10 +263,6 @@ input:checked + .slider:before {
 
         $("#"+id+":first-child").text(t);
         $("#"+id+":first-child").val(t);
-    }
-
-    function myDeleteFunction() {
-        document.getElementById("myTable").deleteRow(0);
     }
 
     function anclicked(btn) {
@@ -284,6 +282,22 @@ input:checked + .slider:before {
         socket.emit('saveslot', {heading:editingSlotName, slotinfo:ed.value });
         $('#modalEditSlot').modal('hide');
         
+    }
+
+    function deleteSlotInfo(btn) {
+        socket.emit('deleteslot', {heading:editingSlotName });
+        //var dd = document.getElementById(ddl);;
+        //console.log(dd);
+        $("#"+ddl+":first-child").text('Choose slot type');
+        $("#"+ddl+":first-child").val('Choose slot type');
+        
+        var imgdiv = $("#"+ddl).parent().parent().parent().parent().parent().find("img")[0];
+        imgdiv.style = "visibility:hidden;"
+
+        ddl = '';
+        
+        $('#modalEditSlot').modal('hide');
+        socket.emit('getSlotDropdownList', null);
     }
 
     function editSlotValues(btn) {
@@ -322,6 +336,7 @@ input:checked + .slider:before {
         //console.log(button.data('whatever'));
         //var recipient = button.data('whatever') // Extract info from data-* attributes
         var recipient = button.data('whatever');
+        ddl = recipient;
         //console.log(recipient);
         var ed = document.getElementById(recipient);
         editingSlotName = ed.value;
@@ -409,7 +424,7 @@ input:checked + .slider:before {
 
     //socket returning info
     socket.on('resultscode', function (msg) {
-        console.log("comes back")
+       
         var ed = document.getElementById("html");
         ed.innerHTML = msg['html'];
 

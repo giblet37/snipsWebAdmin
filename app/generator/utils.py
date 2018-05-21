@@ -7,7 +7,7 @@
 # Created Date: Sunday, May 6th 2018, 9:12:44 am
 # Author: Greg
 # -----
-# Last Modified: Fri May 18 2018
+# Last Modified: Mon May 21 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -94,6 +94,9 @@ class YamlDB():
         #    print("1111 key: {} | val: {}".format(k, v))
         return self.data[heading]
         #return self.data.get(heading, self.data)
+
+    def delete_heading(self, heading):
+        if heading in self.data: del self.data[heading]
 
     def set_yaml_data(self, heading, datain):
         datain = [x for x in datain if x] #remove empty list items

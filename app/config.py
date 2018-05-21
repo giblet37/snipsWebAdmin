@@ -38,6 +38,7 @@ from flask_yaml import Yaml
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+
 class Config:
     DEBUG = False
     DEBUG_LOG = 'logs/debug.log'
@@ -47,11 +48,12 @@ class Config:
     SSL_REDIRECT = False
     YAMLFILE = os.path.join(basedir,"data/db.yaml")
     VERSION = "0.1"
+    SNIPS_DIR = os.environ.get('SNIPS_DIR', '/usr/share/snips/assistant')
     SNIPS_TOML = "/etc/snips.toml"
     SNIPS_TOML_BACKUP = "/etc/snips.toml.bak"
-    SNIPS_ASSISTANT_SNIPSFILE = '/usr/share/snips/assistant/Snipsfile.yaml'
-    SNIPS_ASSISTANT_ASSISTANTFILE = '/usr/share/snips/assistant/assistant.json'
-    SNIPS_ASSISTANT_SNIPPETDIR = '/usr/share/snips/assistant/snippets'
+    SNIPS_ASSISTANT_SNIPSFILE = os.path.join(SNIPS_DIR,"Snipsfile.yaml")
+    SNIPS_ASSISTANT_ASSISTANTFILE = os.path.join(SNIPS_DIR,"assistant.json")
+    SNIPS_ASSISTANT_SNIPPETDIR = os.path.join(SNIPS_DIR,"snippets")
     WTF_CSRF_ENABLED = False
     USER_MQTT_SETTINGS = os.path.join(os.path.dirname(basedir),"settings.yaml")
 
@@ -64,11 +66,10 @@ class Config:
 
 class ProductionConfig(Config):
     DEBUG = False
-
+    
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
-      
       
         
 

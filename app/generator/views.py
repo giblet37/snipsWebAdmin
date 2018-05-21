@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Sat May 19 2018
+# Last Modified: Mon May 21 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -55,6 +55,7 @@ def generatorPage():
 
     socketio.on_event('generate', generate, namespace='/generator')
     socketio.on_event('saveslot', saveslot, namespace='/generator')
+    socketio.on_event('deleteslot', deleteslot, namespace='/generator')
     socketio.on_event('savenewslot', savenewslot, namespace='/generator')
     socketio.on_event('getSlotDropdownList', getSlotDropdownList, namespace='/generator')
 
@@ -79,7 +80,9 @@ def getSlotDropdownList(data):
     global db
 
     #save the new slot info that came in
-    savenewslot(data)
+    if data:
+        savenewslot(data)
+    
     a = db.get_yaml_data('Buildin')
     
     stg = ''
@@ -104,16 +107,16 @@ def getData():
         #print (request.data['toml'])
         #print(request.data)
         json_data = request.get_json()
-        print(json_data)
+        #print(json_data)
         #python_obj = json.loads(json_data)
         heading = json_data["heading"]
-        print(heading)
+        #print(heading)
 
     
         a = db.get_yaml_data(heading)  
         s = ''
         for item in a:
-            s += "{}\n".format(item)
+            s += "{}\n".format(item.encode('utf-8'))
         return jsonify({'good':s})               
     
   
@@ -204,6 +207,18 @@ def saveslot(data):
     #heading:editingSlotName, slotinfo:ed.value 
    
     db.set_yaml_data(data['heading'],data['slotinfo'].split("\n"))
+
+    db.save_yaml_file()
+
+def deleteslot(data):
+    global db
+
+    cus = db.get_yaml_data('Custom')
+    cus.remove(data['heading'])
+
+    db.set_yaml_data('Custom',cus)
+
+    db.delete_heading(data['heading'])
 
     db.save_yaml_file()
 

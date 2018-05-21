@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:36:13 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 17 2018
+# Last Modified: Sun May 20 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -40,8 +40,6 @@ from flask_wtf.csrf import CSRFProtect
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
 from config import config
-#import eventlet
-#eventlet.monkey_patch(socket=True)
 
 
 bootstrap = Bootstrap()
