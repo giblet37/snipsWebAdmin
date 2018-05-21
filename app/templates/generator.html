@@ -259,7 +259,7 @@ input:checked + .slider:before {
         var t = $(btn).text();
 
         var editdiv = $(btn).parent().parent().parent().parent().parent().parent().find("img")[0];
-        editdiv.style = "visibility:visible;"
+        editdiv.style = "visibility:visible;";
 
         $("#"+id+":first-child").text(t);
         $("#"+id+":first-child").val(t);
@@ -345,6 +345,13 @@ input:checked + .slider:before {
         //var s = $("#"+button.data('whatever')+":first-child").text(t);
         modal.find('.modal-title').text('Slot - ' + ed.value);
         modal.find('.modal-body input').val(ed.value);
+
+        var delButton = document.getElementById('modeldeletebutton');
+        if (ed.value.startsWith('snips/')) {
+            delButton.style = "visibility:hidden;";
+        } else {
+            delButton.style = "visibility:visible;";
+        }
 
         $.ajax({
             data : JSON.stringify({ heading: ed.value}),
