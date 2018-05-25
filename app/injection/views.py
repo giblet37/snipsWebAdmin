@@ -56,10 +56,13 @@ def injectionPage():
 
     if canInject == "YES":
         #get a list of slot items to use
-        with open(current_app.config['SNIPS_ASSISTANT_TRAINEDASSISTANTFILE']) as f:
-            data = json.load(f)
-            for item in data["dataset_metadata"]["entities"]:
-                slots.append(item)
+        try:
+            with open(current_app.config['SNIPS_ASSISTANT_TRAINEDASSISTANTFILE']) as f:
+                data = json.load(f)
+                for item in data["dataset_metadata"]["entities"]:
+                    slots.append(item)
+        except:
+           canInject = "File not found - {}".format(current_app.config['SNIPS_ASSISTANT_TRAINEDASSISTANTFILE'])
 
     return render_template('injection.html', canInject=canInject, slots=slots)
 
@@ -87,7 +90,7 @@ def subprocess_read(command):
     
     output, error = p.communicate()
     if p.returncode != 0:
-        return 'error: Error with Syslog {}'.format(error)
+        return 'Error: {}'.format(error)
 
     return text
 
