@@ -19,6 +19,7 @@
     .modal-header {display: inline-block; padding-left: 15px; padding-top: 15px; padding-bottom: 0px;}
     p {font-size: 12px;}
 
+
     /* The switch - the box around the slider */
 .switch {
   position: relative;
@@ -86,6 +87,7 @@ input:checked + .slider:before {
 </div>
 <input type="hidden" id="slotsList" name="variable" value="{{ slotsList|safe }}">
 <div>
+    <!-- Slots -->
     <div class="card mt-3">
         <div class="card-header">
             <table class="table table-borderless table-sm">
@@ -94,7 +96,7 @@ input:checked + .slider:before {
                         <b>Slots</b>
                     </td>
                     <td style=" text-align: right">
-                        <button class="btn btn-secondary btn-sm" type="button" id="btnAddSlot" onclick="addSlot(this)" value="Add Slot">
+                        <button class="btn btn-secondary btn-sm" style="width: 100px;" type="button" id="btnAddSlot" onclick="addSlot(this)" value="Add Slot">
                             Add Slot
                         </button>
                     </td>
@@ -109,15 +111,34 @@ input:checked + .slider:before {
             </form>
         </div>
     </div>
+ 
+    <!-- Phrases -->
     <div class="card mt-3">
         <div class="card-header">
             <table class="table table-borderless table-sm">
                 <tr>
                     <td style="vertical-align: middle">
-                        <b>Sentences</b>
+                        <b>Phrases</b>&nbsp;&nbsp;&nbsp;&nbsp; [&nbsp;&nbsp;pattern: <i>label=phrase_1, phrase_2, phrase_3, ...</i>&nbsp;&nbsp;]
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        <div class="card-body">
+            <textarea id="phraseText" style="width:100%; height:90px;" placeholder="weather=weather,forecast,temperature,can also use,multiple words"></textarea>
+        </div>
+    </div>
+
+    <!-- Sentence area -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <table class="table table-borderless table-sm">
+                <tr>
+                    <td style="vertical-align: middle">
+                        <b>Sentences</b>&nbsp;&nbsp;&nbsp;&nbsp; {&nbsp;&nbsp;insert $<i>slot_label</i> for Slots&nbsp;&nbsp;|&nbsp;&nbsp;#<i>phrase_label</i> for Phrases&nbsp;&nbsp;}
                     </td>
                     <td style=" text-align: right">
-                        <button class="btn btn-success btn-sm" type="button" id="btnGenerate" onclick="generate(this)" value="Generate">
+                        <button class="btn btn-success btn-sm" style="width: 100px;" type="button" id="btnGenerate" onclick="generate(this)" value="Generate">
                             Generate
                         </button>
                     </td>
@@ -125,10 +146,11 @@ input:checked + .slider:before {
             </table>
         </div>
         <div class="card-body">
-            <textarea id="tb" style="width:100%; height:250px;"></textarea>
+            <textarea id="tb" rows="5" style="width:100%; height:250px;" placeholder="what is the #weather going to be like $slot_snipstime"></textarea>
         </div>
     </div>
-    
+
+    <!-- generated output and code -->
     <div class="card mt-3 mb-3">
         <div class="card-header">
             <ul class="nav nav-pills ml-2 mt-1 card-header-pills" id="myTab" role="tablist">
@@ -200,7 +222,8 @@ input:checked + .slider:before {
 
 
     var socket = io.connect('http://' + document.domain + ':' + location.port + '/generator');
-    var rownum = 0;
+    var rownumSlot = 0;
+    var rownumPhrase = 0;
     var editingSlotName = '';
     var dropb = '';
     var ddl = '';
@@ -210,7 +233,7 @@ input:checked + .slider:before {
     function addSlot(ctl) {
         var table = document.getElementById("slotsTable");
         var row = table.insertRow();
-        row.id = "row" + rownum;
+        row.id = "row" + rownumSlot;
       
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
@@ -226,8 +249,8 @@ input:checked + .slider:before {
 
         var d = '';
         d = "<div class='dropdown'>";
-        d += "<button class='btn mt-1 w-100 btn-outline-secondary dropdown-toggle' type='button' id='dropdownMenu" + rownum + "' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Choose slot type</button>";
-        d += " <ul class='dropdown-menu' aria-labelledby='dropdownMenu" + rownum + "'>";
+        d += "<button class='btn mt-1 w-100 btn-outline-secondary dropdown-toggle' type='button' id='dropdownMenu" + rownumSlot + "' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>Choose slot type</button>";
+        d += " <ul class='dropdown-menu' aria-labelledby='dropdownMenu" + rownumSlot + "'>";
         d += slotsList.value;
         d += "<li><div class='dropdown-divider'></div></li>"
         d += "<li><a class='dropdown-item' href='#' onclick='anclicked(this)' data-toggle='modal' data-target='#modalNewSlot' data-value='New Slot Type'>New Slot Type</a></li>";
@@ -239,7 +262,7 @@ input:checked + .slider:before {
         s = "<div class='row no-gutters'>";
         s += "<div class='col-3 mr-2'><input required class='form-control mt-1' type='text' placeholder='Label' onkeypress='validate(event)'></div>";
         s += "<div class='col-3 mr-2'>" + d + "</div>";
-        s += "<div class='col-auto mt-1 mr-2' style='visibility:hidden;'><img class='mt-1' src='/static/edit.png' alt='edit' height='25' width='25'  data-toggle='modal' data-target='#modalEditSlot' data-whatever='dropdownMenu" + rownum + "'></div>";
+        s += "<div class='col-auto mt-1 mr-2' style='visibility:hidden;'><img class='mt-1' src='/static/edit.png' alt='edit' height='25' width='25'  data-toggle='modal' data-target='#modalEditSlot' data-whatever='dropdownMenu" + rownumSlot + "'></div>";
         s += "<div class='col mr-2'><label style='margin-bottom:0px;' class='switch'><input type='checkbox' onclick='switchChange(this);'><span class='slider round'></span></label></div>";
         s += "<div class='col-4 mr-2'><input class='form-control mt-1' type='text' style='visibility:hidden' onkeypress='validate2(event)'></div>";
         s += "<div class='col mt-1' style='text-align: right;'><img class='mt-1 ok' src='/static/trash.png' alt='bin' height='25' width='25' onclick='deleteRow(this)'></div>";
@@ -249,7 +272,7 @@ input:checked + .slider:before {
         cell2.style.width = '99%';
         cell2.innerHTML = s;
 
-        rownum++;
+        rownumSlot++;
     }
 
 
@@ -502,6 +525,7 @@ input:checked + .slider:before {
                 //we work!!!
                 //console.log(slots);
                 slots["sentences"] = $('#tb').val();
+                slots["phrases"] = $('#phraseText').val();
                 socket.emit('generate', slots);
             }
         }

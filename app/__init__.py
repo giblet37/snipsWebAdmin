@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:36:13 pm
 # Author: Greg
 # -----
-# Last Modified: Sun May 20 2018
+# Last Modified: Fri May 25 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -95,6 +95,9 @@ def create_app(config_name):
 
     from generator import generator as generator_blueprint
     app.register_blueprint(generator_blueprint)
+
+    from injection import injection as injection_blueprint
+    app.register_blueprint(injection_blueprint)
 
     return app
 

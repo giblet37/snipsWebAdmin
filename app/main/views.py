@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 8:35:06 pm
 # Author: Greg
 # -----
-# Last Modified: Sun May 20 2018
+# Last Modified: Fri May 25 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -217,6 +217,14 @@ def restartSnipsServices(data):
     else:
         socketio.emit('restartServicesComplete', 'Complete<br><br>Refresh page to view any changes', namespace='/toml')
 
+def git_version():
+    c = "git rev-list --pretty=format:'<b>Last Updated:</b> '%ad --max-count=1 --date=relative `git rev-parse HEAD`"
+    p = subprocess.Popen([c], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    output, error = p.communicate()
+    if p.returncode == 0:
+        return output.replace("commit ","<b>Version:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;").replace("\n","<br>")
+    else:
+        return 'unknown error getting version info'
 
 @main.route('/')
 def index():
@@ -243,7 +251,7 @@ def index():
     table_assistant, table_slots, table_snippets = get_assistant_table()
     servicesTable = get_snips_service_status()
 
-    return render_template('index.html', table=get_mqtt_table(), connected=connected, fileText=fileText, servicesTable=servicesTable, table_assistant=table_assistant, table_slots=table_slots, table_snippets=table_snippets, syslogfile=syslogfile, version=current_app.config['VERSION'])
+    return render_template('index.html', table=get_mqtt_table(), connected=connected, fileText=fileText, servicesTable=servicesTable, table_assistant=table_assistant, table_slots=table_slots, table_snippets=table_snippets, syslogfile=syslogfile, version=git_version())
 
 def get_mqtt_table():
     items = []

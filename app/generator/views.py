@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Mon May 21 2018
+# Last Modified: Fri May 25 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -126,8 +126,24 @@ def getData():
 def generate(data):
     global db
 
-    sentences = data['sentences'].split("\n")
-    sentences = filter(None, sentences)
+    phrases = data['phrases'].split("\n")
+    phrases = filter(None, phrases)
+  
+
+    sentencesTemp = data['sentences'].split("\n")
+    sentencesTemp = filter(None, sentencesTemp)
+
+    sentences = []
+    for ph in phrases:
+        label = ph.split("=")
+        f = "#{}".format(label[0])
+        phrasewords = label[1].split(",")
+        for words in phrasewords:
+            for ss in sentencesTemp:
+                sentences.append(ss.replace(f,words))
+
+
+
     items = {}
     built = []
     stg = ''
