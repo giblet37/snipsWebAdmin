@@ -7,7 +7,7 @@ Flask==0.12.4
 Flask-Bootstrap==3.3.7.1
 Werkzeug==0.12.2
 toml
-yaml
+pyyaml
 flask_table
 #Flask-WTF
 flask-socketio

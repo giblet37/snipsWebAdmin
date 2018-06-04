@@ -7,7 +7,10 @@ https://youtu.be/gGwnzSOB9Nc
 if installing this to a RPi make sure to run "sudo apt-get update" for the latest files
 
     #install pip
-    sudo apt-get install python-pip python-git
+    sudo apt-get install python-pip python-git python-setuptools python-dev libffi-dev
+
+    #update to the latest pip
+    pip install --upgrade pip
     
     #clone this git
     git clone https://github.com/oziee/snipsWebAdmin.git
