@@ -10,6 +10,7 @@
 :last modified time: 2018-04-19 20:08:15
 
 """
+import logging
 import ssl
 from collections import namedtuple
 from paho.mqtt.client import (  # noqa: F401
@@ -44,6 +45,7 @@ __version__ = "1.0.1"
 
 TopicQos = namedtuple("TopicQos", ["topic", "qos"])
 
+logger = logging.getLogger('snipsWebAdmin-MQTT')
 
 class Mqtt():
     """Main Mqtt class."""
@@ -123,6 +125,8 @@ class Mqtt():
                 tls_version=self.tls_version,
                 ciphers=self.tls_ciphers,
             )
+
+        logger.info("Connecting to MQTT Server {}:{}".format(self.broker_url, self.broker_port))
         
         self.client.loop_start()
         try:
@@ -130,10 +134,11 @@ class Mqtt():
                 self.broker_url, self.broker_port, keepalive=self.keepalive
             )
         except Exception as e:
-            print("Error connecting to MQTT Server - {}".format(e))
+            logger.error("Error connecting to MQTT Server - {}".format(e))
         
 
     def _disconnect(self):
+        logger.info("Disconnecting from MQTT Server")
         # type: () -> None
         self.client.loop_stop()
         self.client.disconnect()

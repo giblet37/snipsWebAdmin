@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 8:35:06 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 17 2018
+# Last Modified: Sat Jun 02 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -35,10 +35,10 @@
 
 # -*- coding: utf-8 -*-
 
-from flask import stream_with_context, render_template, redirect, url_for, current_app, jsonify, request, Response
+from flask import stream_with_context, render_template, Response
 from . import watch
 from app import mqtt,socketio
-from flask_socketio import emit
+#from flask_socketio import emit
 import re
 import time
 from datetime import datetime
@@ -77,14 +77,7 @@ terminationReasons = {
 
 @socketio.on('disconnect', namespace='/watch')
 def disconnect():
-    global sessions
-    global devices
-    sessions = []
-    #devices = []
-    iamhere = ''
-
-    #remove mqtt subscriptions
-    #mqtt.unsubscribe_all()
+    mqtt.unsubscribe_all()
 
 
 
@@ -623,11 +616,12 @@ def background():
     mqtt.subscribe("hermes/hotword/toggleOff")
 
         
-    #d = devices
-    #devices = []
+    connected = 'NO'
+    if mqtt.connected:
+        connected = 'YES'
 
 
-    return render_template('watch.html', devices=devices,deviceCount=len(devices))
+    return render_template('watch.html',connected=connected, devices=devices,deviceCount=len(devices))
 
 
 @watch.route('/watch')

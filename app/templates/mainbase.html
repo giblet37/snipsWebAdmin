@@ -44,8 +44,7 @@
         $('li.active').removeClass('active');
         $('a[href="' + location.pathname + '"]').closest('li').addClass('active'); 
       });
-    </script>
-    <script>
+
       $('#myTab a').on('click', function (e) {
         e.preventDefault()
         $(this).tab('show')
@@ -55,6 +54,17 @@
             resize();
         }
       })
+
+      $(window).on('beforeunload', function () {
+        //close the socket when changing pages
+        if (typeof socket != "undefined") {
+          if (socket.connected) {
+            socket.disconnect();
+          }
+        }
+        
+        
+    });
     </script>
     {%- endblock scripts %}
     {%- endblock body %}

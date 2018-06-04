@@ -4,10 +4,10 @@
 ### **************************************************************************** ###
 # 
 # Project: Snips Web Admin
-# Created Date: Friday, April 27th 2018, 7:47:53 pm
+# Created Date: Friday, April 27th 2018, 8:35:06 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 31 2018
+# Last Modified: Fri Jun 01 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -33,10 +33,22 @@
 
 
 
-from flask import Blueprint
+from flask import render_template, current_app, jsonify,request
+from flask_table import Table, Col, html 
+from . import addnewdevice
+#from app import mqtt,mqttYaml,socketio
+from app import mqtt, socketio
+#from flask_socketio import emit
+#import utils
+import os
+import json
+#from shutil import copyfile
+import subprocess
+import string
+import toml
+from collections import OrderedDict
 
-devices = Blueprint('devices', __name__)
+@addnewdevice.route('/addnewdevice')
+def addnewdevice():
 
-from . import views, errors, utils, assistant
-
-
+    return render_template('addnewdevice.html')

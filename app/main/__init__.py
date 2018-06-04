@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:47:53 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 17 2018
+# Last Modified: Wed May 30 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -37,6 +37,6 @@ from flask import Blueprint
 
 main = Blueprint('main', __name__)
 
-from . import views, errors, utils
+from . import views, errors
 
 

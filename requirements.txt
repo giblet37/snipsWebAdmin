@@ -1,12 +1,18 @@
+bcrypt>=3.1.3
+cryptography>=1.5
+pynacl>=1.0.1
+eventlet
 Flask==0.12.4
 Flask-Bootstrap==3.3.7.1
 Werkzeug==0.12.2
-pyyaml
+toml
+yaml
 flask_table
-Flask-WTF
+#Flask-WTF
 flask-socketio
-WTForms
+#WTForms
 paho-mqtt
 gevent
-eventlet
+paramiko
+
 

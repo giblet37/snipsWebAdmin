@@ -9,6 +9,9 @@
 {% endblock %}
 
 {% block navbar %}
+<link rel="stylesheet" href="{{ url_for('static', filename='fa-svg-with-js.css') }}">
+<script src="{{ url_for('static', filename='fontawesome-all.min.js') }}"></script>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <a class="navbar-brand" href="#">
         <img src="{{ url_for('static', filename='logo.png') }}" height="30" class="d-inline-block align-top" alt="">
@@ -19,16 +22,14 @@
         </button>
     <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
         <ul class="nav navbar-nav">
-            <li class="active"><a class="nav-link" href="/">Home</a></li>
-            <li><a class="nav-link" href="{{ url_for('watch.watch') }}">Watch</a></li>
-            <li>
-                <a class="nav-link" href="{{ url_for('devices.devicePage') }}">Devices</a>
-            </li>
-            <li>
-                <a class="nav-link" href="{{ url_for('injection.injectionPage') }}">Injection</a>
-            </li>
-            <li><a class="nav-link" href="{{ url_for('generator.generatorPage') }}">Generator</a></li>
+            <li><a class="nav-link" href="{{ url_for('home.homePage') }}">Home</a></li>
+            <li><a class="nav-link" href="{{ url_for('devices.devicePage') }}">Devices</a></li>
             
+            
+            <li><a class="nav-link" href="{{ url_for('watch.watch') }}">Watch</a></li>
+            
+            <li><a class="nav-link" href="{{ url_for('generator.generatorPage') }}">Generator</a></li>
+            <li ><a class="nav-link" href="/info"><i class="fa fa-info-circle"></i></a></li>
         </ul>
     </div>
    

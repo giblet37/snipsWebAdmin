@@ -4,10 +4,10 @@
 ### **************************************************************************** ###
 # 
 # Project: Snips Web Admin
-# Created Date: Sunday, May 6th 2018, 9:12:44 am
+# Created Date: Friday, April 27th 2018, 7:47:53 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 25 2018
+# Last Modified: Fri Jun 01 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -29,4 +29,14 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # 
 ### **************************************************************************** ###
+
+
+
+
+from flask import Blueprint
+
+addnewdevice = Blueprint('addnewdevice', __name__)
+
+from . import views, errors
+
 

@@ -1,13 +1,629 @@
 {% extends "base.html" %}
 
-{% block title %}Snips - Devices{% endblock %}
+
+{% block title %}Snips - Device Manager{% endblock %}
 
 {% block page_content %}
+<style>
+    .card-header {padding: 3px 10px 5px 10px;}
+    .table {margin-bottom: 0px;}
+    .table th, .table td {vertical-align: middle;padding: 5px;}
 
-<div id="test">
-    Still Under Development :)
-</div>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    .content { height: 100%; margin-bottom: 10px}
+    #editor,#syslogview { white-space: nowrap;width:100%; overflow-y: scroll; overflow-x: scroll; padding: 10px; resize: none; background-color: #444; color: white; font-size: 14px; font-family: monospace;}
+    .container { width: 100%; padding-right: 0px; padding-left: 0px;}
+    #syslogview1 { white-space: nowrap; display: block; overflow: hidden; overflow-y:scroll; padding: 10px;  min-height: 100%; resize: none;background-color: #444; color: white; font-size: 14px; font-family: monospace;}
+    
+    .serviceActive {color: green; font-weight: bold;}
+    .serviceInactive {color: red; font-weight: bold;}
+    .serviceActivating {color: blue; font-weight: bold;}
+    .my-name-class {width:50%;}
+
+    #updatelogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
+
+    #installlogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
+    #injectionlogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
 
 
+</style>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <td style="vertical-align: middle">
+                                <b>Device Manager</b>
+                        </td>
+                        
+                    </tr>
+                </table>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="FormControlSelect1">Select Device</label>
+                    <select class="form-control" id="selectedDevice" onchange="selectedDeviceChange(this)">
+                        {% for item in devicelist %}
+                            <option value="{{ item['value'] }}">{{ item['text'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal first run.. setup devices-->
+        <div class="modal" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="scanModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal" role="document">
+                <div class="modal-content">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: center;">
+                                <br><h3><b>Loading Device Information...</b></h3>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">
+                                <img src="{{ url_for('static', filename='animated_loading__by__amiri.gif') }}">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal install snips asr injection services-->
+        <div class="modal fade" id="injectionModalCenter" tabindex="-1" role="dialog" aria-labelledby="injectionModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="injectionModalCenterTitle">Installing Snips-ASR-Injection</h5>
+                
+                </div>
+                <div class="modal-body" id="msgbody">
+                    <div id="msginjectioncomplete" style="display: none;">
+                        
+                    </div>
+                    
+                    <div id="installmessage">
+                        <div name="injectionlogview" id="injectionlogview" contenteditable="false">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnInjectionClose" onclick="btnInjectionClose()" data-dismiss="modal" style="visibility: hidden;">Close</button>
+                </div>
+            </div>
+            </div>
+        </div>
+        
+
+        <div id="ErrorDIV" class="alert alert-danger mt-4" role="alert" style="display:none;">
+            Error
+        </div>
+ 
+        <div class="card mt-3" id="displayInfo" style="visibility: hidden;">
+            <div class="card-header">
+                <ul class="nav nav-pills card-header-pills" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active ml-3 mt-2 mb-2" id="about-tab" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="false">Info</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mt-2 mb-2" id="toml-tab" data-toggle="tab" href="#toml" role="tab" aria-controls="toml" aria-selected="false">TOML</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mt-2 mb-2" id="services-tab" data-toggle="tab" href="#services" role="tab" aria-controls="services" aria-selected="false">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mt-2 mb-2" id="syslog-tab" data-toggle="tab" href="#syslog" role="tab" aria-controls="syslog" aria-selected="false">System Log</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link mt-2 mb-2" id="assistant-tab" data-toggle="tab" href="#assistant" role="tab" aria-controls="assistant" aria-selected="false">Assistant</a>
+                    </li>
+                    <li class="nav-item">
+                            <a class="nav-link mt-2 mb-2" id="injection-tab" data-toggle="tab" href="#injection" role="tab" aria-controls="injection" aria-selected="false">Injection</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-content" id="bodyPanel">
+                
+                <div class="tab-pane card-body active" id="about" role="tabpanel" aria-labelledby="about-tab">
+                    <!-- about device..specs, uptime etc-->
+                    <h5 class="card-title">About Device</h5>
+                    <div class="container">
+                        <section class="content">
+                                <div name="sysinfoview" id="sysinfoview" contenteditable="false"></div>
+                        </section>
+                    </div>  
+                </div>
+                
+                <div class="tab-pane card-body" id="toml" role="tabpanel" aria-labelledby="toml-tab">
+                    <h5 class="card-title">Snips Config '/etc/snips.toml' file</h5>
+                    <div class="container" style="vertical-align: middle">
+                        <section class="content">
+                            <form action="{{ url_for('devices.backup') }}" method="post" id="form">
+                                
+                                <div name="editor" id="editor" contenteditable="true">{{ syslogfile|safe }}</div>
+                                <!-- Modal -->
+                                <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalCenterTitle">Save TOML</h5>
+                                        
+                                        </div>
+                                        <div class="modal-body" id="msgbody">
+                                            <div id="msgcomplete" style="display: none;">
+                                                
+                                            </div>
+                                            <div class="progress" id="progress" style="display: none;">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                                            </div>
+                                            <div id="message">
+                                                <p>Saving changes, write all text out to the snips.toml file, then restarts snips services.</p>
+                                                <p>Tick the box to create a backup of the current TOML file before saving changes. This will overwrite any previous backup file.</p>
+                                                <div class="input-group mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <div class="input-group-text">
+                                                        <input id="chkbox" type="checkbox" aria-label="Checkbox for following text input">
+                                                        </div>
+                                                    </div>
+                                                    <input type="text" class="form-control" aria-label="Text input with checkbox" disabled value="Backup the current TOML file">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" id="btnClose" data-dismiss="modal">Close</button>
+                                            <input class="btn btn-primary" id="submit" type="submit" value="Save and Restart">
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <!-- Button trigger modal -->
+                                <button id="saveTOML" type="button" class="btn btn-primary" style="margin-top: 10px" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#exampleModalCenter">
+                                    Save Changes
+                                </button>
+                            </form>
+                        </section>
+                    </div>  
+                </div>
+
+                <div class="tab-pane card-body " id="syslog" role="tabpanel" aria-labelledby="syslog-tab">
+                    <h5 class="card-title">System Log '/var/log/syslog'</h5>
+                    <div class="container">
+                        <section class="content">
+                                <div name="syslogview" id="syslogview" contenteditable="false">{{ syslogfile|safe }}</div>
+        
+                                <button type="button" class="btn btn-primary" style="margin-top: 10px" id="btnRefresh" onclick="refreshSysLog(this)">
+                                    Refresh
+                                </button>
+                           
+                        </section>
+                    </div>  
+                </div>
+
+                <div class="tab-pane card-body" id="services" role="tabpanel" aria-labelledby="services-tab">
+                    <table style="width: 100%">
+                        <tr>
+                            <td><h5 class="card-title">Services</h5></td>
+                            <td style="text-align: right">
+                                <!-- Modal restart snips services-->
+                                <div class="modal fade" id="restartsnipsModalCenter" tabindex="-1" role="dialog" aria-labelledby="restartsnipsModalCenterTitle" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title" id="restartsnipsModalCenterTitle">Restarting Snips Services</h5>
+                                        
+                                        </div>
+                                        <div class="modal-body" id="msgbody">
+                                            <div id="msgrestartcomplete" style="text-align: center">
+                                                Restarting.....
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" id="btnRestartSnipsClose" data-dismiss="modal" style="visibility: hidden;">Close</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <!-- Modal apt-get update -->
+                                <div class="modal fade" id="updateModalCenter" tabindex="-1" role="dialog" aria-labelledby="updateModalCenterTitle" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title" id="updateModalCenterTitle">Updating Snips</h5>
+                                        
+                                        </div>
+                                        <div class="modal-body" id="msgbody">
+                                            <div id="msgupdatecomplete" style="display: none;">
+                                                
+                                            </div>
+                                            
+                                            <div id="updatemessage">
+                                                <div name="updatelogview" id="updatelogview" contenteditable="false">
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" id="btnUpdateClose" data-dismiss="modal" style="visibility: hidden;">Close</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <!-- Button trigger modal restart services-->
+                                <button id="btnRestartSnips" type="button" style="margin-bottom: 0.75rem;"  onclick="btnRestartSnips()" class="btn btn-secondary btn-sm" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#restartsnipsModalCenter">
+                                        Restart Snips Services
+                                    </button>
+                                <!-- Button trigger modal apt-get update upgrade-->
+                                <button id="btnUpdateSnips" type="button" style="margin-bottom: 0.75rem;"  onclick="btnUpdateClick()" class="btn btn-secondary btn-sm" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#updateModalCenter">
+                                    Update to latest Snips
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <div class="container">
+                        <section class="content"  id ="servicesdivview">
+                            
+                        </section>
+                    </div>
+                </div>
+
+                <div class="tab-pane card-body " id="assistant" role="tabpanel" aria-labelledby="assistant-tab">
+                    <h5 class="card-title">Assistant Information</h5>
+                    <div class="container">
+                        <section class="content">
+                            <div id="assistanttableview" contenteditable="false"></div>
+                        </section>
+                    </div>  
+                </div>
+
+                <div class="tab-pane card-body " id="injection" role="tabpanel" aria-labelledby="injection-tab">
+                    <div class="container">
+                        
+                        <section class="content" id ="injectiondivview">
+                            
+                        </section>
+                    </div>  
+                </div>
+            </div>
+
+            
+        </div>
+
+
+
+<script>
+
+    var socket = io.connect('http://' + document.domain + ':' + location.port + '/device');
+
+    $(window).on('load',function(){
+        
+        $('#loadingModal').modal({
+            backdrop: 'static',
+            keyboard: false
+        })
+        //var devSelected = document.getElementById("selectedDevice").value;
+        //socket.emit('loadDeviceData', { 'device': devSelected });
+        socketemit('loadDeviceData');
+    });
+
+    //returning data for the selected device to show
+    socket.on('hereisthedeviceinfo', function (data) {
+
+        var ed = document.getElementById("syslogview");
+        var sl = data['syslog'][1];
+        ed.innerHTML = sl;
+
+        //info view
+        ed = document.getElementById("sysinfoview");
+        var sl = data['info'][1];
+        ed.innerHTML = sl;
+
+        ed = document.getElementById("editor"); 
+        if( data['toml'][0].length > 0 ) {
+            document.getElementById("saveTOML").disabled = true;
+            ed.innerHTML = "ERROR: " + data['toml'][0];
+        } else {
+            ed.innerHTML = data['toml'][1];
+            document.getElementById("saveTOML").disabled = false;
+        }
+        
+        //if the device is main then display the assistant tab.. or hide it
+        if (data['function'] == 'Main') {
+            document.getElementById("assistant-tab").style.display = "block";
+            document.getElementById("injection-tab").style.display = "block";
+        } else {
+            document.getElementById("assistant-tab").style.display = "none";
+            document.getElementById("injection-tab").style.display = "none";
+        }
+
+        ed = document.getElementById("ErrorDIV");
+        ed.style.display = 'none';
+        ed = document.getElementById("displayInfo");
+        ed.style.visibility = 'visible';
+        $('#loadingModal').modal('hide')
+    });
+
+    //returning html for the assistant table to show
+    socket.on('hereistheassistanttable', function (data) {
+        var ed = document.getElementById("assistanttableview");
+        ed.innerHTML = data;
+    });
+
+    socket.on('hereisthesnippetstable', function (data) {
+        var ed = document.getElementById("assistanttableview");
+        ed.innerHTML += "<br>" + data;
+    });
+    
+    socket.on('hereistheskillstable', function (data) {
+        var ed = document.getElementById("assistanttableview");
+        ed.innerHTML += "<br>" + data;
+    });
+
+    //returning data for the selected device Error
+    socket.on('hereisthedeviceinfoERROR', function (msg) {
+        var ed = document.getElementById("ErrorDIV");
+        ed.style.display = 'block';
+        ed.innerHTML = msg;
+        $('#loadingModal').modal('hide')
+    });
+
+    
+    socket.on('hereistheinjection', function (data) {
+        var ed = document.getElementById("injectiondivview");
+        ed.innerHTML = data;
+    });
+
+    
+    socket.on('hereistheservicestable', function (data) {
+        var ed = document.getElementById("servicesdivview");
+        ed.innerHTML = data;
+    });
+
+    function socketemit(handlename) {
+        var devSelected = document.getElementById("selectedDevice").value;
+        socket.emit(handlename, { 'device': devSelected });
+    }
+
+    //selected device in the selection changed
+    function selectedDeviceChange(selectObject) {
+        var ed = document.getElementById("displayInfo");
+        ed.style.visibility = 'hidden';
+        var devSelected = selectObject.value;  
+        $('#loadingModal').modal({
+            backdrop: 'static',
+            keyboard: false
+        })
+        $('#about-tab').tab('show');
+        socket.emit('loadDeviceData', { 'device': devSelected });
+    }
+
+    $(document).ready(function() {
+        var ed = document.getElementById("editor"); 
+        htmlContent = ed.innerHTML;
+        if (htmlContent.startsWith('Snips TOML file not found')) {
+            document.getElementById("saveTOML").disabled = true;
+        }
+
+        var ed = document.getElementById("syslogview"); 
+        htmlContent = ed.innerHTML;
+        if (htmlContent.startsWith('error: Error with Syslog')) {
+            document.getElementById("btnRefresh").disabled = true;
+        }
+    });
+
+    function resize()
+    {
+        var heights = window.innerHeight;
+        var top = $("#toml").position();
+        var makeit = heights - top.top - 275;
+        var makeit1 = heights - top.top - 390;
+        document.getElementById("toml").style.height = makeit + "px";
+        var ed = document.getElementById("editor");
+        ed.style.maxHeight = makeit1 + "px";
+        ed.style.height = makeit1 + "px";
+        
+        top = $("#syslog").position();
+        var makeit = heights - top.top - 275;
+        var makeit1 = heights - top.top - 390;
+        document.getElementById("syslog").style.height = makeit + "px";
+        ed = document.getElementById("syslogview");
+        ed.style.maxHeight = makeit1 + "px";
+        ed.style.height = makeit1 + "px";
+        //ed.scrollTop = ed.scrollHeight;
+    }
+    resize();
+    window.onresize = function() {
+        resize();
+    };
+
+    //socket returning info for the syslog
+    socket.on('log', function (msg) {
+        var ed = document.getElementById("syslogview");
+        ed.innerHTML = msg;
+        ed.scrollTop = ed.scrollHeight;
+    });
+
+    //socket returning apt-get updating snips info
+    socket.on('updatingSnipsLog', function (msg) {
+        var ed = document.getElementById("updatelogview");
+        ed.innerHTML += msg;
+        ed.scrollTop = ed.scrollHeight;
+    });
+
+    //socket apt-get complete.. show close button
+    socket.on('updatingSnipsComplete', function (msg) {
+        var btn = document.getElementById("btnUpdateClose");
+        btn.style.visibility = 'visible';
+    });
+
+    //restartServicesComplete
+    socket.on('restartServicesComplete', function (msg) {
+        var ed = document.getElementById("msgrestartcomplete");
+        ed.innerHTML = msg;
+        var btn = document.getElementById("btnRestartSnipsClose");
+        btn.style.visibility = 'visible';
+    });
+
+    function refreshSysLog() {
+        //socket.emit('refresh', { 'a': 'b' });
+        socketemit('refresh');
+    }
+
+    
+    function btnRestartSnips() {
+        //console.log('restart click')
+        //socket.emit('restartsnipsservices', { 'a': 'b' });
+        socketemit('restartsnipsservices');
+    }
+
+    function btnUpdateClick() {
+        //console.log('update click')
+        //socket.emit('updatesnips', { 'a': 'b' });
+        socketemit('updatesnips');
+    }
+
+    document.getElementById("submit").onclick = function() {
+        var t = document.getElementById("editor").innerText;
+    
+        var chk = document.getElementById("chkbox").checked;
+        var devSelected = document.getElementById("selectedDevice").value;
+       
+        event.preventDefault();
+
+        var progressdiv = document.getElementById("progress");
+        progressdiv.style.display = null;
+        document.getElementById("message").style="display: none;";
+        document.getElementById("submit").style="display: none;";
+       
+
+        event.preventDefault();
+
+		$.ajax({
+            data : JSON.stringify({ toml: t, backup: chk, device: devSelected.trim() }),
+            type : 'POST',
+            url : '/toml',
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(data){  
+                var thisSession = data;
+                if(thisSession.hasOwnProperty('error')){
+                    progressdiv.style="display: none;";
+                    p=document.getElementById("msgcomplete");
+                    p.style="text-align: left; color: red;";
+                    p.innerHTML = thisSession['error'];
+                    p.style.display = null;
+                }
+                else {
+                    progressdiv.style="display: none;";
+                    p=document.getElementById("msgcomplete");
+                    p.style="text-align: center;";
+                    p.innerHTML = "Complete!<br>Snips services are restarting";
+                    p.style.display = null;
+                }
+                
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                //alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+                progressdiv.style="display: none;";
+                p=document.getElementById("msgcomplete");
+                p.style="text-align: center; color: red;";
+                p.innerHTML = "ERROR!!!!!!!!!";
+                p.style.display = null;
+            }  
+        })
+
+        
+	};
+
+   
+
+    $('#exampleModalCenter').on('hidden.bs.modal', function (e) {
+        $('#exampleModalCenter').modal('hide')
+        document.getElementById("progress").style="display: none;";
+        p=document.getElementById("msgcomplete");
+        p.style="text-align: center;";
+        p.innerHTML = "";
+        p.style="display: none;";
+        document.getElementById("message").style = null;
+        document.getElementById("submit").style = null;
+        document.getElementById("chkbox").checked = false;
+    })
+
+    $('#updateModalCenter').on('hidden.bs.modal', function (e) {
+        $('#updateModalCenter').modal('hide')
+        p=document.getElementById("updatelogview");
+        p.innerHTML = "";
+        document.getElementById("btnUpdateClose").style="visibility: hidden;";
+    })
+
+    $('#restartsnipsModalCenter').on('hidden.bs.modal', function (e) {
+        $('#restartsnipsModalCenter').modal('hide')
+        p=document.getElementById("msgrestartcomplete");
+        p.innerHTML = "Restarting.....";
+        document.getElementById("btnRestartSnipsClose").style="visibility: hidden;";
+    })
+</script>
+
+<script>
+
+        
+        function btnInjectionClick() {
+            //socket.emit('installsnipsasrinjection', { 'a': 'b' });
+            socketemit('installsnipsasrinjection');
+        }
+    
+        function btnRun() {
+            var condSelected = document.getElementById("operation").value;
+            var slotSelected = document.getElementById("slot").value;
+            var lines = $('#slotsText').val().split('\n');
+            var text = [];
+            for(var i = 0;i < lines.length;i++){
+                //code here using lines[i] which will give you each line
+                if (lines[i] != '') {
+                    text += "\"" + lines[i] + "\",";
+                }
+            }
+    
+            if (text.length > 0) {
+                socket.emit('runinjection', { 'condition': condSelected, 'slot': slotSelected, 'items': text});
+            }
+            else {
+                alert('No slot items have been entered!');
+            }
+            
+        }
+    
+        //socket returning apt-get updating snips info
+        socket.on('updatingSnipsASRInjectionInstalling', function (msg) {
+            var ed = document.getElementById("injectionlogview");
+            ed.innerHTML += msg;
+            ed.scrollTop = ed.scrollHeight;
+        });
+    
+         //socket apt-get complete.. show close button
+         socket.on('installingComplete', function (msg) {
+            var btn = document.getElementById("btnInjectionClose");
+            btn.style.visibility = 'visible';
+        });
+        
+        //socket injection complete.. notify user
+        socket.on('injectionsComplete', function (msg) {
+            alert("Injection has been sent to the ASR!");
+            var ed = document.getElementById("slotsText");
+            ed.value = "";
+        });
+    
+        function btnInjectionClose() {
+            //install either complete or failed.. reload page
+            window.location.reload(true); 
+        }
+    
+    
+    </script>
+
+<!-- <script src="{{ url_for('static', filename='sh.js') }}"></script> -->
 
 {% endblock %}

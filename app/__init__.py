@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:36:13 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 25 2018
+# Last Modified: Mon Jun 04 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -35,54 +35,50 @@
 
 from flask import Flask
 from flask_mqtt import Mqtt
-from flask_yaml import Yaml
-from flask_wtf.csrf import CSRFProtect
+#from flask_wtf.csrf import CSRFProtect
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
 from config import config
-
+import toml
 
 bootstrap = Bootstrap()
 mqtt = Mqtt()
-yaml = Yaml()
-mqttYaml = Yaml()
-csrf = CSRFProtect()
-socketio = SocketIO(async_mode='eventlet', ping_timeout=30,
-                    logger=False, engineio_logger=False)
+#csrf = CSRFProtect()
 
+import eventlet
+eventlet.monkey_patch()
+
+socketio = SocketIO(async_mode='eventlet')
+#socketio = SocketIO(async_mode='eventlet', ping_timeout=30, logger=False, engineio_logger=False)
+#socketio = SocketIO( ping_timeout=30, logger=False, engineio_logger=False)
 
 def create_app(config_name):
     app = Flask(__name__)
+  
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    yaml.init_app(app)
 
-    #load MQTT settigns to config to get mqtt working
-    
-    mqttYaml.init_app(app, './settings.yaml') #'USER_MQTT_SETTINGS'))
-    mqttsettings = mqttYaml.get_yaml_data("MQTT")
-    for key, value in mqttsettings.iteritems():
-        if key.isupper():
+    try:
+        tomlDict = toml.load('./settings.toml')
+        for key, value in tomlDict['MQTT'].iteritems():
             app.config[key] = value
-
-    #tempYaml = None
+        for key, value in tomlDict['SSH'].iteritems():
+            app.config[key] = value
+    except Exception as e:
+        print(e)
 
     mqtt.init_app(app)
-    
-    #socketio = SocketIO(app)
-    #socketio.init_app(app)
-    #socketio = SocketIO(app, async_mode='eventlet',
-    #                    ping_timeout=30, logger=True, engineio_logger=True)
-    #socketio.debug = True
-    socketio.init_app(app)
 
     bootstrap.init_app(app)
-    csrf.init_app(app)
+    #csrf.init_app(app)
 
     if app.config['SSL_REDIRECT']:
         from flask_sslify import SSLify
         sslify = SSLify(app)
+
+    from home import home as home_blueprint
+    app.register_blueprint(home_blueprint)
 
     from main import main as main_blueprint
     app.register_blueprint(main_blueprint)
@@ -96,9 +92,12 @@ def create_app(config_name):
     from generator import generator as generator_blueprint
     app.register_blueprint(generator_blueprint)
 
-    from injection import injection as injection_blueprint
-    app.register_blueprint(injection_blueprint)
+   
+    from addnewdevice import addnewdevice as addnewdevice_blueprint
+    app.register_blueprint(addnewdevice_blueprint)
 
+    socketio.init_app(app)
+    
     return app
 
 

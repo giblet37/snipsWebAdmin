@@ -4,10 +4,10 @@
 ### **************************************************************************** ###
 # 
 # Project: Snips Web Admin
-# Created Date: Friday, April 27th 2018, 7:47:53 pm
+# Created Date: Friday, April 27th 2018, 8:07:29 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 31 2018
+# Last Modified: Sat Jun 02 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -33,10 +33,35 @@
 
 
 
-from flask import Blueprint
-
-devices = Blueprint('devices', __name__)
-
-from . import views, errors, utils, assistant
+from flask import render_template, request, jsonify
+from . import home
 
 
+@home.app_errorhandler(403)
+def forbidden(e):
+    if request.accept_mimetypes.accept_json and \
+            not request.accept_mimetypes.accept_html:
+        response = jsonify({'error': 'forbidden'})
+        response.status_code = 403
+        return response
+    return render_template('403.html'), 403
+
+
+@home.app_errorhandler(404)
+def page_not_found(e):
+    if request.accept_mimetypes.accept_json and \
+            not request.accept_mimetypes.accept_html:
+        response = jsonify({'error': 'not found'})
+        response.status_code = 404
+        return response
+    return render_template('404.html'), 404
+
+
+@home.app_errorhandler(500)
+def internal_server_error(e):
+    if request.accept_mimetypes.accept_json and \
+            not request.accept_mimetypes.accept_html:
+        response = jsonify({'error': 'internal server error'})
+        response.status_code = 500
+        return response
+    return render_template('500.html'), 500

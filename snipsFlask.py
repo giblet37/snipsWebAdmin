@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:12:41 pm
 # Author: Greg
 # -----
-# Last Modified: Sun May 20 2018
+# Last Modified: Sat Jun 02 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -36,29 +36,33 @@
 import os
 import sys
 from shutil import copyfile
+import logging
 
 
+if os.path.isfile('./settings.toml') == False:
+    copyfile('./settings.toml.conf', './settings.toml')
 
-if os.path.isfile('./settings.yaml') == False:
-    copyfile('./settings.yaml.conf', './settings.yaml')
-
-if os.path.isfile('./app/data/db.yaml') == False:
-    copyfile('./app/data/db.yaml.conf', './app/data/db.yaml')
-
-COV = None
-if os.environ.get('FLASK_COVERAGE'):
-    import coverage
-    COV = coverage.coverage(branch=True, include='app/*')
-    COV.start()
+if os.path.isfile('./app/data/db.toml') == False:
+    copyfile('./app/data/db.toml.conf', './app/data/db.toml')
 
 
 from app import create_app, get_socketio
-import eventlet
-eventlet.monkey_patch()
+
+logging.basicConfig(level=logging.INFO)
 
 app = create_app('default')
+#app.config['FLASK_LOG_LEVEL'] = 'ERROR'
+app.logger.setLevel(logging.ERROR)
+
+
 sock = get_socketio()
 
+#log only "errors" for these items
+logging.getLogger('socketio').setLevel(logging.ERROR)
+logging.getLogger('engineio').setLevel(logging.ERROR)
+logging.getLogger('werkzeug').setLevel(logging.ERROR)
+logging.getLogger('paramiko').setLevel(logging.ERROR)
 
-sock.run(app, host='0.0.0.0', port=5000, log_output=True) #, use_reloader=True)
+
+sock.run(app, host='0.0.0.0', port=5000, log_output=False) #, use_reloader=True)
 

@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:42:34 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 25 2018
+# Last Modified: Thu May 31 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -34,20 +34,21 @@
 
 
 import os
-from flask_yaml import Yaml
+import platform
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    DEBUG = False
-    DEBUG_LOG = 'logs/debug.log'
-    ERROR_LOG = 'logs/error.log'
+    #DEBUG = False
+    #DEBUG_LOG = 'logs/debug.log'
+    #ERROR_LOG = 'logs/error.log'
+    WTF_CSRF_ENABLED = False
     SECRET_KEY='Q5G94WB6RVRP4TO85RGI2Y6TM7HYY0P'
-    SUDO_PASSWORD = 'raspberry'
     SSL_REDIRECT = False
-    YAMLFILE = os.path.join(basedir,"data/db.yaml")
-    VERSION = "0.1"
+
+    TOMLFILE = os.path.join(basedir,"data/db.toml")
+
     SNIPS_DIR = os.environ.get('SNIPS_DIR', '/usr/share/snips/assistant')
     SNIPS_TOML = "/etc/snips.toml"
     SNIPS_TOML_BACKUP = "/etc/snips.toml.bak"
@@ -55,9 +56,18 @@ class Config:
     SNIPS_ASSISTANT_ASSISTANTFILE = os.path.join(SNIPS_DIR,"assistant.json")
     SNIPS_ASSISTANT_TRAINEDASSISTANTFILE = os.path.join(SNIPS_DIR,"trained_assistant.json")
     SNIPS_ASSISTANT_SNIPPETDIR = os.path.join(SNIPS_DIR,"snippets")
-    WTF_CSRF_ENABLED = False
-    USER_MQTT_SETTINGS = os.path.join(os.path.dirname(basedir),"settings.yaml")
+    
+    APP_SETTINGS = os.path.join(os.path.dirname(basedir),"settings.toml")
+    
+    CMD_HOSTNAME = "hostname"
 
+    installedDevice = platform.system()
+    #print(installedDevice)
+    if installedDevice == "Ubuntu":
+        CMD_HOSTNAME = "hostname -I"
+    #elif installedDevice == "Darwin":
+    #     CMD_HOSTNAME = "hostname"
+    
 
 
     @staticmethod
@@ -66,27 +76,17 @@ class Config:
 
 
 class ProductionConfig(Config):
-    DEBUG = False
+    #DEBUG = False
     
     @classmethod
     def init_app(cls, app):
         Config.init_app(app)
       
         
-
-        import logging
         credentials = None
         secure = None
-       
-        ## log to stderr
-        import logging
-        from logging import StreamHandler
-        file_handler = StreamHandler()
-        file_handler.setLevel(logging.INFO)
-        app.logger.addHandler(file_handler)
 
-       
-
+    
 
 config = {
     'production': ProductionConfig,

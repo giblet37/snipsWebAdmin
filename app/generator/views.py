@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 25 2018
+# Last Modified: Thu May 31 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -33,19 +33,21 @@
 
 
 
-from flask import render_template, redirect, url_for, current_app, jsonify,request,Response
-from flask_table import Table, Col, html 
+#from flask import render_template, redirect, url_for, current_app, jsonify,request,Response
+from flask import render_template, current_app, jsonify,request
+#from flask_table import Table, Col, html 
 from . import generator
 from app import socketio
-from flask_socketio import emit
-import utils
-import os
+#from flask_socketio import emit
+#import utils
+#import os
 import json
-import subprocess
+#import subprocess
 import string
-from utils import YamlDB
+#from utils import YamlDB
 import random
 import itertools
+from app.apptoml import tomlDB
 
 db = ''
 
@@ -59,8 +61,8 @@ def generatorPage():
     socketio.on_event('savenewslot', savenewslot, namespace='/generator')
     socketio.on_event('getSlotDropdownList', getSlotDropdownList, namespace='/generator')
 
-    db = YamlDB(current_app)
-    a = db.get_yaml_data('Buildin')
+    db = tomlDB(current_app.config['TOMLFILE'])
+    a = db.get_toml_data('Buildin')
     
     stg = ''
     for item in a:
@@ -68,8 +70,8 @@ def generatorPage():
 
     stg += "<li><div class='dropdown-divider'></div></li>"
 
-    a = db.get_yaml_data('Custom')
-    print(a)
+    a = db.get_toml_data('Custom')
+  
     for item in a:
         stg += "<li><a class='dropdown-item' href='#' onClick='dropClicked(this)' data-value='" + item + "'>" + item + "</a></li>"
       
@@ -83,7 +85,7 @@ def getSlotDropdownList(data):
     if data:
         savenewslot(data)
     
-    a = db.get_yaml_data('Buildin')
+    a = db.get_toml_data('Buildin')
     
     stg = ''
     for item in a:
@@ -91,7 +93,7 @@ def getSlotDropdownList(data):
 
     stg += "<li><div class='dropdown-divider'></div></li>"
 
-    a = db.get_yaml_data('Custom')
+    a = db.get_toml_data('Custom')
   
     for item in a:
         stg += "<li><a class='dropdown-item' href='#' onClick='dropClicked(this)' data-value='" + item + "'>" + item + "</a></li>"
@@ -103,17 +105,12 @@ def getSlotDropdownList(data):
 def getData():
     if request.method == "POST":
         global db
-        #data = json.loads( request.data)
-        #print (request.data['toml'])
-        #print(request.data)
-        json_data = request.get_json()
-        #print(json_data)
-        #python_obj = json.loads(json_data)
-        heading = json_data["heading"]
-        #print(heading)
 
-    
-        a = db.get_yaml_data(heading)  
+        json_data = request.get_json()
+
+        heading = json_data["heading"]
+
+        a = db.get_slot_toml_data(heading)  
         s = ''
         for item in a:
             s += "{}\n".format(item.encode('utf-8'))
@@ -133,17 +130,20 @@ def generate(data):
     sentencesTemp = data['sentences'].split("\n")
     sentencesTemp = filter(None, sentencesTemp)
 
+
     sentences = []
-    for ph in phrases:
-        label = ph.split("=")
-        f = "#{}".format(label[0])
-        phrasewords = label[1].split(",")
-        for words in phrasewords:
-            for ss in sentencesTemp:
-                sentences.append(ss.replace(f,words))
 
-
-
+    if len(phrases) > 0:
+        for ph in phrases:
+            label = ph.split("=")
+            f = "#{}".format(label[0])
+            phrasewords = label[1].split(",")
+            for words in phrasewords:
+                for ss in sentencesTemp:
+                    sentences.append(ss.replace(f,words))
+    else:
+        sentences = sentencesTemp
+    
     items = {}
     built = []
     stg = ''
@@ -162,7 +162,8 @@ def generate(data):
     for key,value in data.iteritems():
         if type(value) == dict:
             vls = []
-            v = db.get_yaml_data(value['slot'])
+            v = db.get_slot_toml_data(value['slot'])
+         
             if value['slot'].startswith("snips/") == False:
                 slotvalues += '<b>[{}]</b><br>'.format(value['slot'])
                 for l in v:
@@ -175,6 +176,7 @@ def generate(data):
                     vls.append(h)
 
             items[value['label']] = vls
+   
             colors[value['label']] = value['color']
             consoletext += '{}, {}'.format(value['label'],value['slot'])
             if value['required'] == 'true':
@@ -183,8 +185,7 @@ def generate(data):
                     consoletext += ", {}".format(value['text'])
             consoletext += '<br>'
 
-
-
+  
     keys, values = zip(*items.items())
     for v in itertools.product(*values):
         experiment = dict(zip(keys, v))
@@ -194,16 +195,12 @@ def generate(data):
 
     consoletext = "{}{}<br>{}".format(consoletext,slotvalues,slotcontents)
 
-    # {"color":td1.id, "label":td2.value, "slot":slotval, "required":c.checked, "text":t };
-    #[text](slotName) 
-    #date, snips/datetime, true, whats the date
     dictcheck = []
     for builtitems in built:
         for sent in sentences:
             temp1 = sent
             temp2 = sent
             for key, value in builtitems.iteritems():
-                #print("{} : {}".format(key,value))
                 f = "${}".format(key)
                 m = "<span style='background-color: " + colors[key] + "'>" + value + "</span>"
                 c = "[{}]({})".format(value,key)
@@ -220,34 +217,21 @@ def generate(data):
 
 def saveslot(data):
     global db
-    #heading:editingSlotName, slotinfo:ed.value 
-   
-    db.set_yaml_data(data['heading'],data['slotinfo'].split("\n"))
 
-    db.save_yaml_file()
+    db.set_slot_toml_data(data['heading'],data['slotinfo'].split("\n"))
+    db.save_toml_file()
 
 def deleteslot(data):
     global db
-
-    cus = db.get_yaml_data('Custom')
-    cus.remove(data['heading'])
-
-    db.set_yaml_data('Custom',cus)
-
-    db.delete_heading(data['heading'])
-
-    db.save_yaml_file()
+    db.delete_slot(data['heading'])
 
 def savenewslot(data):
     global db
 
-    cus = db.get_yaml_data('Custom')
+    cus = db.get_toml_data('Custom')
 
     cus.append(data['heading'])
 
-
-    db.set_yaml_data('Custom',cus)
-
-    db.set_yaml_data(data['heading'],data['slotinfo'].split("\n"))
-
-    db.save_yaml_file()
+    db.set_toml_data('Custom',cus)
+    db.set_toml_data(data['heading'],data['slotinfo'].split("\n"))
+    db.save_toml_file()

@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 8:35:06 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 25 2018
+# Last Modified: Mon Jun 04 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -33,76 +33,22 @@
 
 
 
-from flask import render_template, redirect, url_for, current_app, jsonify,request,Response
+from flask import render_template, current_app, jsonify,request
 from flask_table import Table, Col, html 
 from . import main
-from app import mqtt,mqttYaml,socketio
-from flask_socketio import emit
-import utils
+#from app import mqtt,mqttYaml,socketio
+from app import mqtt, socketio
+#from flask_socketio import emit
+#import utils
 import os
 import json
-from shutil import copyfile
+#from shutil import copyfile
 import subprocess
 import string
-
-
-class ActiveInactiveCol(Col):
-
-    def td(self, item, attr):
-        content = self.td_contents(item, self.get_attr_list(attr))
-        if item.isActive == 'Active':
-            return html.element(
-                'td',
-                content=content,
-                escape_content=False,
-                attrs={'class': 'serviceActive'})
-        elif item.isActive == 'Inactive':
-                return html.element(
-                    'td',
-                    content=content,
-                    escape_content=False,
-                    attrs={'class': 'serviceInactive'})
-        elif item.isActive == 'Activating':
-                return html.element(
-                    'td',
-                    content=content,
-                    escape_content=False,
-                    attrs={'class': 'serviceActivating'})
-        else:
-            return html.element(
-                'td',
-                content=content,
-                escape_content=False,
-                attrs={'class': 'serviceNone'})
-            
-
-    
-
-class serviceItem(object):
-    def __init__(self, name, version, isActive):
-        self.name = name
-        self.version = version
-        self.isActive = isActive
-
-
-class serviceItemTable(Table):
-    no_items = 'No Snips services installed'
-    classes = ['table']
-    name = Col('Snips Service',
-        # Apply this class to both the th and all tds in this column
-        column_html_attrs={'class': 'my-name-class'},
-        th_html_attrs={'class': 'table-active'},
-    )
-    version = Col('Version',
-        # Apply this class to both the th and all tds in this column
-        column_html_attrs={'class': 'my-name-class'},
-        th_html_attrs={'class': 'table-active'},
-    )
-    isActive = ActiveInactiveCol('Status',
-        # Apply this class to both the th and all tds in this column
-        column_html_attrs={'class': 'my-name-class'},
-        th_html_attrs={'class': 'table-active'},
-    )
+import toml
+from collections import OrderedDict
+import operator
+from app.apptoml import tomlDB
 
 
 class Item(object):
@@ -133,23 +79,23 @@ class ItemTable(Table):
         
     )
 
-class SkillsItem(object):
-    def __init__(self, name, url):
-        self.name = name
-        self.url = url
+class DeviceItem(object):
+    def __init__(self, hostname, deviceos, devicefunction):
+        self.hostname = hostname
+        self.deviceos = deviceos
+        self.devicefunction = devicefunction
+        self.delete = ""
 
-class SkillsItemTable(Table):
-    no_items = 'Nothing to show'
+class DeviceItemTable(Table):
+    no_items = 'No devices to list'
     classes = ['table']
-    name = Col(
-        'Skill',
-        # Apply this class to both the th and all tds in this column
+    hostname = Col(
+        'Device',
         column_html_attrs={'class': 'my-name-class'},
         th_html_attrs={'class': 'table-active'},
     )
-    url = Col(
-        'URL', 
-        # Apply these to both
+    deviceos = Col(
+        'OS',
         column_html_attrs={
             'data-something': 'my-data',
             'class': 'my-description-class'},
@@ -158,64 +104,23 @@ class SkillsItemTable(Table):
         # Apply this to just the td - note that this will things from
         # overwrite column_html_attrs.
         td_html_attrs={'data-something': 'my-td-only-data'},
-        
     )
-
-class SnippetItem(object):
-    def __init__(self, name):
-        self.name = name
-
-class SnippetItemTable(Table):
-    no_items = 'Nothing to show'
-    classes = ['table']
-    name = Col(
-        'Snippet Directories',
-        # Apply this class to both the th and all tds in this column
-        column_html_attrs={'class': 'my-name-class'},
+    devicefunction = Col(
+        'Role',
+        column_html_attrs={
+            'data-something': 'my-data',
+            'class': 'my-description-class'},
+        # Apply this to just the th
         th_html_attrs={'class': 'table-active'},
+        # Apply this to just the td - note that this will things from
+        # overwrite column_html_attrs.
+        td_html_attrs={'data-something': 'my-td-only-data'},
     )
-
-def refreshSysLog(data):
-    #send the newest tail of /var/log/syslog to the page to show
-    socketio.emit('log', loadsyslog(), namespace='/toml')
-
-
-def updateSnips(data):
-    #return the apt-get update output info
-    command = 'echo "{}\n" | sudo -S apt-get -y update && sudo apt-get -y upgrade'.format(current_app.config['SUDO_PASSWORD'])
-
-    socketio.emit('updatingSnipsLog', 'Running...<br>apt-get -y update && sudo apt-get -y upgrade<br><br>', namespace='/toml')
-    
-    #, universal_newlines=True
-    p = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-
-    while True:
-        line = p.stdout.readline()
-        if line != '':
-            text = line.rstrip() + "<br>"
-            socketio.emit('updatingSnipsLog', text, namespace='/toml')
-        else:
-            break
-
-    output, error = p.communicate()  
-    if p.returncode != 0:
-        socketio.emit('updatingSnipsLog', '<br>Error updating Snips<br>{}'.format(error), namespace='/toml')
-    else:
-        socketio.emit('updatingSnipsLog', output + "<br>" + error.replace("\n","<br>"), namespace='/toml')
-       
-    #all done and finished.. show the close button   
-    socketio.emit('updatingSnipsComplete', command, namespace='/toml')
-
-def restartSnipsServices(data):
-    command = 'echo "{}\n" | sudo -S systemctl restart \"snips-*\"'.format(current_app.config['SUDO_PASSWORD'])
-
-    p = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-
-    output, error = p.communicate()  
-    if p.returncode != 0:
-        socketio.emit('restartServicesComplete', '<br>Error Restarting Snips Services<br>{}'.format(error), namespace='/toml')
-    else:
-        socketio.emit('restartServicesComplete', 'Complete<br><br>Refresh page to view any changes', namespace='/toml')
+    delete = Col(
+        '',
+        th_html_attrs={'class': 'table-active'},
+        td_html_attrs={'class': 'deletebox'},)
+  
 
 def git_version():
     c = "git rev-list --pretty=format:'<b>Last Updated:</b> '%ad --max-count=1 --date=relative `git rev-parse HEAD`"
@@ -226,161 +131,67 @@ def git_version():
     else:
         return 'unknown error getting version info'
 
-@main.route('/')
+@main.route('/info')
 def index():
-
-    socketio.on_event('refresh', refreshSysLog, namespace='/toml')
-    socketio.on_event('updatesnips', updateSnips, namespace='/toml')
-    socketio.on_event('restartsnipsservices', restartSnipsServices, namespace='/toml')
 
     connected = 'NO'
     if mqtt.connected:
         connected = 'YES'
 
-    #load the snips.toml config file
-    fileText = 'Snips TOML file not found at {}'.format(current_app.config['SNIPS_TOML'])
-    if os.path.isfile(current_app.config['SNIPS_TOML']):
-        file = open(current_app.config['SNIPS_TOML'] , "r")
-        fileText = file.read() 
+    socketio.on_event('deleteHost', deleteHost, namespace='/info')
+    socketio.on_event('justaddHost', justaddHost, namespace='/info')
 
-
-
-    #tail of teh /var/log/syslog to display
-    syslogfile = loadsyslog()
-
-    table_assistant, table_slots, table_snippets = get_assistant_table()
-    servicesTable = get_snips_service_status()
-
-    return render_template('index.html', table=get_mqtt_table(), connected=connected, fileText=fileText, servicesTable=servicesTable, table_assistant=table_assistant, table_slots=table_slots, table_snippets=table_snippets, syslogfile=syslogfile, version=git_version())
+    return render_template('info.html', table=get_mqtt_table(),devicestable=get_device_table(), connected=connected,  version=git_version())
 
 def get_mqtt_table():
     items = []
-    mqttsettings = mqttYaml.get_yaml_data("MQTT")
-    for key, value in mqttsettings.iteritems():
-        if key.isupper():
-            if not value == '':
-                items.append(Item(key, value))
+    #mqttsettings = mqttYaml.get_yaml_data("MQTT")
+    mqttsettings = toml.load(current_app.config['APP_SETTINGS'], _dict=OrderedDict)
+    for key, value in mqttsettings['MQTT'].iteritems():
+        items.append(Item(key, value))
+
+    #for key, value in mqttsettings.iteritems():
+    #    if key.isupper():
+    #        if not value == '':
+    #            items.append(Item(key, value))
     table = ItemTable(items)
     return table
 
-def get_assistant_table():
-    #slots
-    #base info from file
-    assitantdict = utils.get_assistant_info_(current_app.config['SNIPS_ASSISTANT_SNIPSFILE'])
-    #print(assitantdict)
-    snippets_items = []
-    snippets_item = [f for f in os.listdir(current_app.config['SNIPS_ASSISTANT_SNIPPETDIR']) if not f.startswith('.')]
-    for si in snippets_item:
-        snippets_items.append(SnippetItem(name=si))
-
-    assistant_items = []
-    assistant_slots = []
-    for key, value in assitantdict.items():
-        if key == "slots":
-            for v in value:
-                assistant_slots.append(SkillsItem(v['name'],v['url']))
-        elif value != '':
-            assistant_items.append(Item(key, value))
-
+def get_device_table():
+    items = []
+   
+    try:
+        devicesettings = toml.load(current_app.config['APP_SETTINGS'])
+        devicesettings = devicesettings['DEVICES']
+        #newlist = sorted(devicesettings, key=itemgetter('FUNCTION')) #, reverse=True)
+        devicesettings.sort(key=operator.itemgetter('FUNCTION'))
+        for item in devicesettings:
+            if "NAME" in item:
+                items.append(DeviceItem("{} ({})".format(item['HOSTNAME'], item['NAME']), item['OS'], item['FUNCTION']))
+            else:
+                items.append(DeviceItem(item['HOSTNAME'], item['OS'], item['FUNCTION']))
+    except:
+        pass
     
-    table_assistant = ItemTable(assistant_items)
-    table_slots = SkillsItemTable(assistant_slots)
-    table_slots.no_items = "No Skills have been included in the assistant file"
-    table_snippets = SnippetItemTable(snippets_items)
-    table_snippets.no_items = "No Snippets to list"
-    return table_assistant, table_slots, table_snippets
+    table = DeviceItemTable(items)
+    return table
 
-def get_snips_service_status():
-    read = subprocess_read('dpkg-query -W -f=\'${binary:Package} ${Version}\n\' snips-*')
-    read = read.split('<br>')
-    listItems =[]
-    for item in read:
-        service = item.split(' ')
-        version = ''
-        if len(service) > 1:
-            version = service[1]
-       
-        is_Service = subprocess_read('systemctl show -p LoadState {} | sed \'s/LoadState=//g\''.format(service[0]))
-       
-        if is_Service == "loaded<br>":
-            is_active = subprocess_read('systemctl show -p ActiveState {} | sed \'s/ActiveState=//g\''.format(service[0]))
-            listItems.append(serviceItem(service[0], version ,is_active.replace("<br>","").capitalize()))
-        else:
-            listItems.append(serviceItem(service[0], version ,''))
-        
+def deleteHost(data):
 
-    return serviceItemTable(listItems)
-    
+    if " " in data['hostname']:
+        data = data['hostname'].split(" ")[0]
+    else:
+        data = data['hostname']
 
-#backup the toml file without page refresh
-@main.route('/toml', methods=['POST'])
-def backup():
-    
-    if request.method == "POST":
-        #data = json.loads( request.data)
-        #print (request.data['toml'])
-        #print(request.data)
-        json_data = request.get_json()
-        #python_obj = json.loads(json_data)
-        toml = json_data["toml"]
-        back =  json_data["backup"]
-    
-        if back:
-            #backup the snips.toml file to snips.toml.bak in the /etc/ folder
-            #do this first before we write the file
-            #copyfile(current_app.config['SNIPS_TOML'], current_app.config['SNIPS_TOML_BACKUP'])
-            c = 'echo "{}\n" | sudo -S cp /etc/snips.toml /etc/snips.toml.bak'.format(current_app.config['SUDO_PASSWORD'])
-            p = subprocess.Popen([c], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-            output, error = p.communicate()  
+    db = tomlDB(current_app.config['APP_SETTINGS'])
+    db.delete_by_hostname(data)
+    pass
 
-        #write the toml to the file
-        #tomlfile = open(current_app.config['SNIPS_TOML'], "w")
-
-        tomlfile = open('/home/pi/dgdifninidvndoivndfivndf.toml', "w")
-        tomlfile.write(toml) 
-        tomlfile.close()
-
-        c = 'echo "{}\n" | sudo -S cp /home/pi/dgdifninidvndoivndfivndf.toml /etc/snips.toml'.format(current_app.config['SUDO_PASSWORD'])
-        p = subprocess.Popen([c], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        output, error = p.communicate()
-
-        #os.remove('/home/pi/dgdifninidvndoivndfivndf.toml')
-    
-        #restart snips services
-        command = 'echo "{}\n" | sudo -S systemctl restart \"snips-*\"'.format(current_app.config['SUDO_PASSWORD'])
-        p = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        output, error = p.communicate()  
-        if p.returncode != 0:
-            return jsonify({'error':'Error restarting Snips services<br>{}'.format(error)}) 
-        #else:
-        #    return jsonify({'good':'Error restarting Snips services<br>{}'.format(error)})                     
-    
-  
-    return jsonify({'good':output})
-
-@main.route('/syslog', methods=['POST'])
-def getsyslog():
-    return loadsyslog()
-
-
-def loadsyslog():
-    return subprocess_read('tail -n 100 /var/log/syslog')
-
-def subprocess_read(command):
-    text = ''
-    p = subprocess.Popen([command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    while True:
-        line = p.stdout.readline()
-        if line != '':
-            text += line.rstrip() + "<br>"
-        else:
-            break
-    
-    output, error = p.communicate()
-    if p.returncode != 0:
-        return 'error: Error with Syslog {}'.format(error)
-
-    return text
-
+def justaddHost(data):
+    db = tomlDB(current_app.config['APP_SETTINGS'])
+    items = db.get_toml_data("DEVICES")
+    items.append(data['data'])
+    db.set_toml_data("DEVICES",items)
+    db.save_toml_file()
+    socketio.emit('addComplete', "add complete!", namespace='/info')
 

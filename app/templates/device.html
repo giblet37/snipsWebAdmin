@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Snips - Devices Scan{% endblock %}
+
+{% block page_content %}
+
+
+    <!-- Modal first run.. setup devices-->
+    <div class="modal" id="scanModalCenter" tabindex="-1" role="dialog" aria-labelledby="scanModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="scanModalCenterTitle">Scanning Snips Devices...</h5>
+                
+                </div>
+                <div class="modal-body" id="msgbody">
+                    <div name="installlogview" id="installlogview" contenteditable="false" style="text-align: center">
+                        <img src="{{ url_for('static', filename='animated_loading__by__amiri.gif') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/devices');
+
+        function sleepFor( sleepDuration ){
+            var now = new Date().getTime();
+            while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+        }
+
+        $(window).on('load',function(){
+            //when the window loads display the modal for scanning for devices.. this only happens if no devices are created on the first run
+            //$('#scanModalCenter').modal('show');
+            $('#scanModalCenter').modal({
+                backdrop: 'static',
+                keyboard: false
+            })
+        });
+
+        $('#scanModalCenter').on('shown.bs.modal.bs.modal', function (e) {
+            //once the modal is shown wait a sec so it looks good:)
+            setTimeout(continueExecution, 2000);  
+        })
+
+        function continueExecution()
+        {
+            socket.emit('scanDevices', { 'a': 'b' });
+        }
+
+        //scan complete
+        socket.on('scanComplete', function (msg) {
+            if (msg.indexOf('Error:') == 0) {
+                socket.disconnect();
+                alert(msg);
+                window.location.href = 'http://' + document.domain + ':' + location.port;
+            } else {
+                window.location.reload();
+            }
+            
+        });
+    </script>
+
+{% endblock %}

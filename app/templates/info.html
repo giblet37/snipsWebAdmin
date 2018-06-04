@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+
+{% block title %}Snips - New Device{% endblock %}
+
+{% block page_content %}
+<script src="{{ url_for('static', filename='jquery.validate.min.js') }}"></script>
+<div class="page-header">
+   
+</div>
+<style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    .content { height: 100%; margin-bottom: 10px}
+    #editor,#syslogview { width:100%; overflow-y: scroll; overflow-x: scroll; padding: 10px; resize: none; background-color: #444; color: white; font-size: 14px; font-family: monospace;}
+    .container { width: 100%; padding-right: 0px; padding-left: 0px;}
+    #syslogview1 { white-space: nowrap; display: block; overflow: hidden; overflow-y:scroll; padding: 10px;  min-height: 100%; resize: none;background-color: #444; color: white; font-size: 14px; font-family: monospace;}
+    
+    .serviceActive {color: green; font-weight: bold;}
+    .serviceInactive {color: red; font-weight: bold;}
+    .serviceActivating {color: blue; font-weight: bold;}
+    .my-name-class {width:50%;}
+
+    #updatelogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
+
+    table.table-sm tr:hover td {background-color: #F8F8F8;}
+    table.table-sm tr img {visibility:hidden;cursor: pointer;}
+    table.table-sm tr:hover img.ok {visibility:visible; cursor: pointer;}
+
+    .deletebox {background-image: url('/static/trash.png');cursor: pointer;background-repeat:no-repeat;background-position: center;}
+
+    .is-invalid input {
+        border-color: #dc3545 !important;
+    }
+    .is-invalid .form-control:focus {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    
+</style>
+
+<div id="info" class="card mt-3">
+    <div class="card-header">
+        <ul class="nav nav-pills card-header-pills" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="mqtt-tab" data-toggle="tab" href="#mqtt" role="tab" aria-controls="mqtt" aria-selected="true">MQTT</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="device-tab" data-toggle="tab" href="#device" role="tab" aria-controls="device" aria-selected="false">Devices</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="about-tab" data-toggle="tab" href="#about" role="tab" aria-controls="about" aria-selected="false">About</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content">
+        <div class="tab-pane card-body active" id="mqtt" role="tabpanel" aria-labelledby="mqtt-tab">
+            <h5 class="card-title">MQTT Settings</h5>
+            {% if connected=='YES' %}
+                <div class="alert alert-success" role="alert">
+                    MQTT Server connected
+                </div>
+            {% else%}
+                <div class="alert alert-warning" role="alert">
+                    MQTT Server not connected. Check your config file settings
+                </div>
+            {% endif %}
+            {{ table }}
+            
+        </div>
+        <div class="tab-pane card-body" id="device" role="tabpanel" aria-labelledby="device-tab">
+            <h5 class="card-title">Devices</h5>
+            {{ devicestable }}
+            <br>
+            <button class="btn btn-success" onclick="addNewDevice(this)" style="width: 200px;" type="button" >
+                New Device
+            </button>
+        </div>
+        <div class="tab-pane card-body" id="about" role="tabpanel" aria-labelledby="about-tab">
+            <h5 class="card-title">Snips Web Admin</h5>
+            <p class="card-text">
+                Snips Management System for managing your snips network.<br>
+                <a href="https://github.com/oziee/snipsWebAdmin" target="_blank">https://github.com/oziee/snipsWebAdmin</a></br>
+                <br><br> {{ version|safe }}</br><br><br>
+               
+            </p>
+            <a href="http://snips.ai" target="_blank" style="width: 165px" class="btn btn-primary">Snips.ai</a>
+            <a href="http://console.snips.ai" target="_blank" style="width: 165px" class="btn btn-primary">Snips Conole</a>
+            <a href="https://www.gitbook.com/@snips/spaces" target="_blank" style="width: 185px" class="btn btn-primary">Snips Documentation</a>
+           
+        </div>
+    </div>
+</div>
+<div id="newdevice" style="display: none;">
+    <div class="card mt-3">
+        <div class="card-header">
+            <b>New Device</b>
+        </div>
+        <div class="card-body">
+                <form id="deviceForm" class="was-validated" novalidate>
+                    <div class="form-group row">
+                        <label for="inputHostname" class="col-sm-2 col-form-label">Hostname</label>
+                        <div class="col-sm-10">
+                            <input type="text" required class="form-control" id="inputHostname" name="inputHostname" placeholder="Hostname or IP. EX: for a new RPi enter raspberrypi">
+                            
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputUsername" class="col-sm-2 col-form-label">Username</label>
+                        <div class="col-sm-10">
+                            <input type="text" required class="form-control" id="inputUsername" name="inputUsername" placeholder="Login username">
+                            
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+                        <div class="col-sm-10">
+                            <input type="text" required class="form-control" id="inputPassword" name="inputPassword" placeholder="Login password">
+                            
+                        </div>
+                    </div>
+                    <fieldset class="form-group">
+                        <div class="row">
+                            <legend class="col-form-label col-sm-2 pt-0">Operating System</legend>
+                            <div class="col-sm-10">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gridRadios1" id="gridRadios1" value="Linux" checked>
+                                    <label class="form-check-label" for="gridRadios1">
+                                        Linux
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gridRadios1" id="gridRadios2" value="Ubuntu" disabled>
+                                    <label class="form-check-label" for="gridRadios2">
+                                        Ubuntu
+                                    </label>
+                                </div>
+                                <div class="form-check disabled">
+                                    <input class="form-check-input" type="radio" name="gridRadios1" id="gridRadios3" value="Debian" disabled>
+                                    <label class="form-check-label" for="gridRadios3">
+                                        Debian
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <div class="row">
+                            <legend class="col-form-label col-sm-2 pt-0">Snips Installation</legend>
+                            <div class="col-sm-10">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gridRadios2" id="gridRadios4" value="option1" checked>
+                                    <label class="form-check-label" for="gridRadios4">
+                                        No Install - Device is already setup. Just add device info to Web Admin.
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gridRadios2" id="gridRadios5" value="option1">
+                                    <label class="form-check-label" for="gridRadios5">
+                                        Snips Main - Install with all services
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gridRadios2" id="gridRadios6" value="option2">
+                                    <label class="form-check-label" for="gridRadios6">
+                                        Snips Satellite - Install minimum services needed
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                        <button id="btnSubmit" disabled type="button" onclick="submitform()" class="btn btn-primary">Install</button>
+                        </div>
+                    </div>
+                    </form>
+        </div>
+    </div>
+    
+</div>
+
+
+
+
+<script type="text/javascript">
+
+    var socket = io.connect('http://' + document.domain + ':' + location.port + '/info');
+
+    function resize(){ }
+
+    $(document).ready(function() {
+        $('.deletebox').click(function() {
+            var value=$(this).closest('tr').children('td:first').text();
+            var trow = $(this).closest('tr');
+       
+            var action = confirm('Delete the device ' + value + ' from the web admin ?');
+            if(action){
+                //delete the item the way you want
+                //alert(value);
+                socket.emit('deleteHost', {hostname:value });
+                $(trow).remove();
+            }
+        });
+        var path = window.location.search;
+        if (path == "?new") {
+            document.getElementById("info").style.display = "none";
+        document.getElementById("newdevice").style.display = "block";
+        }
+    });
+
+    function addNewDevice(cmd) {
+        document.getElementById("info").style.display = "none";
+        document.getElementById("newdevice").style.display = "block";
+    }
+    
+
+    $('#deviceForm').on('blur keyup change', 'input', function(event) {
+        validateForm('#deviceForm');
+    });
+
+    function validateForm(id) {
+        var valid = $(id).validate().checkForm();
+        if (valid) {
+            $('#btnSubmit').prop('disabled', false);
+        } else {
+            $('#btnSubmit').prop('disabled', true);
+        }
+    }
+
+    function submitform() {
+        if(document.getElementById('gridRadios4').checked==true){
+            //only add item to system
+            //alert('just adding item to system');
+            var dict = {};
+            dict['FUNCTION'] = "Satellite";
+            dict['HOSTNAME'] = $("#inputHostname").val();
+            dict['OS'] = $("input:radio[name=gridRadios1]:checked").val();
+            dict['USER'] = $("#inputUsername").val();
+            dict['PASSWORD'] = $("#inputPassword").val();
+            //console.log(dict);
+            socket.emit('justaddHost', { data:dict });
+        } else {
+            alert( "install software too!" );
+        }
+    }
+
+    socket.on('addComplete', function (data) {
+        alert("Device has been added to the Web Admin");
+        $("#inputHostname").val('');
+        $("#inputUsername").val('');
+        $("#inputPassword").val('');
+        $("gridRadios4").checked = true;
+    });
+    
+
+    
+    jQuery.validator.addMethod("hostcheck", function(value, element){
+        if (/^[a-zA-Z0-9_.-]+$/.test(value)) {
+            //console.log('key input valid');
+            return true;  // FAIL validation when REGEX matches
+        } else {
+            return false;   // PASS validation otherwise
+        }
+       
+    }, 'invalid hostname');
+
+    jQuery.validator.addMethod("hostip", function(value, element){
+        if ((value.split(".").length) > 2) {
+            if (/^(?!0)(?!.*\.$)((1?\d?\d|25[0-5]|2[0-4]\d)(\.|$)){4}$/.test(value)) {
+                //console.log('key input valid');
+                return true;  // FAIL validation when REGEX matches
+            } else {
+                return false;   // PASS validation otherwise
+            }
+        } else {
+            return true;
+        }
+    }, 'invalid IP address');
+        
+    $( "#deviceForm" ).validate( {
+        rules: {
+            inputHostname: {
+                required: true,
+                "hostcheck": true,
+                "hostip": true
+            },
+            inputUsername: "required",
+            inputPassword: "required"
+        },
+        messages: {
+            inputHostname: {
+                required: 'enter a valid hostname',
+                hcheck: 'enter a valid hostname'  // over-ride '.addMethod()' message
+            },
+            inputUsername: "enter the ssh login user name",
+            inputPassword: "enter the ssh login password"
+        },
+        errorElement: "div",
+        errorPlacement: function ( error, element ) {
+            // Add the `invalid-feedback` class to the error element
+            error.addClass( "invalid-feedback" );
+            error.insertAfter( element );
+            
+        },
+        highlight: function ( element, errorClass, validClass ) {
+            $( element ).parents( ".col-sm-10" ).addClass( "is-invalid" ).removeClass( "is-valid" );
+            //$( element ).next( "span" ).addClass( "glyphicon-remove" ).removeClass( "glyphicon-ok" );
+            //$(element).closest('.invalid-feedback').removeClass('success').addClass('error');
+        },
+        unhighlight: function (element, errorClass, validClass) {
+            $( element ).parents( ".col-sm-10" ).addClass( "is-valid" ).removeClass( "is-invalid" );
+            //$( element ).next( "span" ).addClass( "glyphicon-ok" ).removeClass( "glyphicon-remove" );
+        }
+        
+    } );
+
+
+    
+</script>
+
+
+
+
+
+{% endblock %}
+

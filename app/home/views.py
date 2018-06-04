@@ -4,10 +4,10 @@
 ### **************************************************************************** ###
 # 
 # Project: Snips Web Admin
-# Created Date: Friday, April 27th 2018, 7:47:53 pm
+# Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Fri May 25 2018
+# Last Modified: Sat Jun 02 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -33,10 +33,13 @@
 
 
 
-from flask import Blueprint
-
-injection = Blueprint('injection', __name__)
-
-from . import views, errors, utils
+from flask import render_template, current_app, jsonify
+#from flask_table import Table, Col, html 
+from . import home
 
 
+
+@home.route('/')
+def homePage():
+
+    return render_template('index.html')

@@ -1,0 +1,58 @@
+{% macro render_info(canInject, slots) %}
+   
+
+    {% if canInject == "NO" %}
+            <br>
+            <div class="alert alert-warning" role="alert">
+                <table style="width: 100%"><tr>
+                    <td>Snips ASR Injection service is not installed</td>
+                    <td style="text-align: right;">
+                        <button class="btn btn-secondary btn-sm" onclick="btnInjectionClick()" style="width: 100px;" type="button" id="btnInjection" data-toggle="modal" data-backdrop="static" data-keyboard="false" data-target="#injectionModalCenter">
+                            Install
+                        </button>
+                    </td>
+                </tr></table>
+                
+            </div>
+        {% elif canInject == "YES" %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <b>Dynamic Vocabulary Slot Injection</b>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="FormControlSelect1">Select Operation</label>
+                        <select class="form-control" id="operation">
+                            <option value="add">Add</option>
+                            <option value="remove" disabled>Remove</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="FormControlSelect2">Select Slot Entity</label>
+                        <select class="form-control" id="slot">
+                            {% for item in slots %}
+                                <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    Slot Items
+                    <textarea id="slotsText" style="width:100%; height:130px;" placeholder="one item per line"></textarea>
+
+                    <button type="button" class="btn btn-secondary mt-2" style="width:100px;" id="btnRun" onclick="btnRun()">Inject</button>
+                </div>
+            </div>
+        {% else %}
+            <br>
+            <div class="alert alert-danger" role="alert">
+                {{ canInject|safe }}
+            </div>
+        {% endif %}
+
+
+{% endmacro %}
+
+
+
+
+                  
+                        
