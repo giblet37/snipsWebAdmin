@@ -152,13 +152,13 @@
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" disabled type="radio" name="grpRadios2" id="gridRadios5" value="main">
+                                    <input class="form-check-input" type="radio" name="grpRadios2" id="gridRadios5" value="Main">
                                     <label class="form-check-label" for="gridRadios5">
                                         Snips Main - Install with all services
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" disabled type="radio" name="grpRadios2" id="gridRadios6" value="satellite">
+                                    <input class="form-check-input" type="radio" name="grpRadios2" id="gridRadios6" value="Satellite">
                                     <label class="form-check-label" for="gridRadios6">
                                         Snips Satellite - Install minimum services needed
                                     </label>
@@ -193,10 +193,11 @@
                 <h5 class="modal-title" id="installModalTitle">Installing Snips Software...</h5>
             </div>
             <div class="modal-body" id="msgbody">
+                <div id="errormsg" style="text-align: center;"></div>
                 <div name="installlogview" id="installlogview" contenteditable="false"></div>
             </div>
             <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closebox()" id="btnInstallClose" data-dismiss="modal" style="visibility: visible;">Close</button>
+                    <button type="button" class="btn btn-secondary" id="btnInstallClose" data-dismiss="modal" style="visibility: hidden;">Close</button>
                 </div>
         </div>
     </div>
@@ -273,45 +274,102 @@
             //console.log(dict);
             socket.emit('justaddHost', { data:dict });
         } else {
-            //alert( "install software too!" );
-            alert($("input:radio[name=grpRadios2]:checked").val());
+            // install software
             $('#installModal').modal({
                 backdrop: 'static',
                 keyboard: false
             })
+
+            var setuptype = $("input:radio[name=grpRadios2]:checked").val();
+            var dict = {};
+            dict['FUNCTION'] = setuptype;
+            dict['HOSTNAME'] = $("#inputHostname").val();
+            dict['OS'] = $("input:radio[name=grpRadios1]:checked").val();
+            dict['USER'] = $("#inputUsername").val();
+            dict['PASSWORD'] = $("#inputPassword").val();
+            dict['SNIPSNAME'] = $("#inputSnipsName").val();
+            socket.emit('installsnips', { data:dict });
         }
     }
 
-    function closebox(){
+    function resetform(){
+        var ed = document.getElementById("installlogview");
+        ed.innerHTML = "";
+        var btn = document.getElementById("btnInstallClose");
+        btn.style.visibility = 'hidden';
         $("#inputHostname").val('');
         $("#inputUsername").val('');
         $("#inputPassword").val('');
         $("#inputSnipsName").val('');
         $("#gridRadios1").prop("checked", true);
         $("#gridRadios4").prop("checked", true);
+        document.getElementById("extra").style.display = "none";
     }
 
-    socket.on('addComplete', function (data) {
+    socket.on('addComplete', function (msg) {
         alert("Device has been added to the Web Admin");
-        $("#inputHostname").val('');
-        $("#inputUsername").val('');
-        $("#inputPassword").val('');
-        $("#inputSnipsName").val('');
-        $("#gridRadios1").prop("checked", true);
-        $("#gridRadios4").prop("checked", true);
+        resetform();
     });
-    
+
+    socket.on('installComplete', function (msg) {
+        var btn = document.getElementById("btnInstallClose");
+        btn.style.visibility = 'visible';
+        var ed = document.getElementById("installlogview");
+        ed.innerHTML = "";
+    });
+
+    socket.on('installError', function (msg) {
+        //alert("An error has occured during install.\n\n" + msg);
+        var ed = document.getElementById("installlogview");
+        ed.style.visibility = 'hidden';
+        
+        ed = document.getElementById("errormsg");
+        ed.innerHTML = msg;
+
+        var btn = document.getElementById("btnInstallClose");
+        btn.style.visibility = 'visible';
+    });
+
+    //socket returning install info to display
+    socket.on('log', function (msg) {
+        var ed = document.getElementById("installlogview");
+        ed.innerHTML += msg;
+        ed.scrollTop = ed.scrollHeight;
+    });
+
+    $('#installModal').on('hidden.bs.modal', function (e) {
+        var ed = document.getElementById("installlogview");
+        ed.style.visibility = 'visible';
+        
+        ed = document.getElementById("errormsg");
+        ed.innerHTML = "";
+        p=document.getElementById("installlogview");
+        p.innerHTML = "";
+        document.getElementById("btnInstallClose").style="visibility: hidden;";
+    })
 
     
     jQuery.validator.addMethod("hostcheck", function(value, element){
         if (/^[a-zA-Z0-9_.-]+$/.test(value)) {
-            //console.log('key input valid');
+            //if (value.includes(".local")) {
+            //    return false;
+            //}
             return true;  // FAIL validation when REGEX matches
         } else {
             return false;   // PASS validation otherwise
         }
        
     }, 'invalid hostname');
+
+    jQuery.validator.addMethod("snipsnamecheck", function(value, element){
+        if (/^[a-zA-Z0-9_-]+$/.test(value)) {
+            //console.log('key input valid');
+            return true;  // FAIL validation when REGEX matches
+        } else {
+            return false;   // PASS validation otherwise
+        }
+       
+    }, 'invalid name');
 
     jQuery.validator.addMethod("hostip", function(value, element){
         if ((value.split(".").length) > 2) {
@@ -337,9 +395,10 @@
             inputPassword: "required",
             inputSnipsName: {
                 required: { depends: function() {
-                    return (($('input[name=grpRadios2]:checked').val() == 'main') || ($('input[name=grpRadios2]:checked').val() == 'main'));
+                    return (($('input[name=grpRadios2]:checked').val() == 'Main') || ($('input[name=grpRadios2]:checked').val() == 'Satellite'));
                     }
-                }
+                },
+                "snipsnamecheck": true
             }
         },
         messages: {
@@ -348,7 +407,11 @@
                 hcheck: 'enter a valid hostname'  // over-ride '.addMethod()' message
             },
             inputUsername: "enter the ssh login user name",
-            inputPassword: "enter the ssh login password"
+            inputPassword: "enter the ssh login password",
+            inputSnipsName: {
+                required: 'enter a name for the snips device',
+                hcheck: 'enter a valid name'  // over-ride '.addMethod()' message
+            }
         },
         errorElement: "div",
         errorPlacement: function ( error, element ) {
@@ -373,15 +436,7 @@
     
 </script>
 
-<script>
 
-    //socket returning install info to display
-    socket.on('log', function (msg) {
-        var ed = document.getElementById("installlogview");
-        ed.innerHTML += msg;
-        ed.scrollTop = ed.scrollHeight;
-    });
-</script>
 
 
 

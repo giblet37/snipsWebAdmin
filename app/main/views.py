@@ -49,6 +49,7 @@ import toml
 from collections import OrderedDict
 import operator
 from app.apptoml import tomlDB
+from app.devices.utils import SSHConnect
 
 
 class Item(object):
@@ -140,6 +141,7 @@ def index():
 
     socketio.on_event('deleteHost', deleteHost, namespace='/info')
     socketio.on_event('justaddHost', justaddHost, namespace='/info')
+    socketio.on_event('installsnips', installsnips, namespace='/info')
 
     return render_template('info.html', table=get_mqtt_table(),devicestable=get_device_table(), connected=connected,  version=git_version())
 
@@ -187,11 +189,80 @@ def deleteHost(data):
     db.delete_by_hostname(data)
     pass
 
-def justaddHost(data):
+def addDeviceInfoToDB(data):
     db = tomlDB(current_app.config['APP_SETTINGS'])
     items = db.get_toml_data("DEVICES")
-    items.append(data['data'])
+    if "SNIPSNAME" in data:
+        del data["SNIPSNAME"]
+    items.append(data)
     db.set_toml_data("DEVICES",items)
     db.save_toml_file()
+
+def justaddHost(data):
+    data = data['data']
+    addDeviceInfoToDB(data)
     socketio.emit('addComplete', "add complete!", namespace='/info')
 
+def installsnips(data):
+    data = data['data']
+
+    ostype = data["OS"]
+    if ".local" in data["HOSTNAME"]:
+        data["HOSTNAME"] = data["HOSTNAME"].split(".local")[0]
+    user = data["USER"]
+    password = data["PASSWORD"]
+    installType = data["FUNCTION"]
+
+    print(data)
+
+    #connectSudo(self, device, commands=[], socket=None, socketTopic="", namespace=None):
+    cmds = [] #install commands
+
+    cmds.append("sudo apt-get update")
+    cmds.append("sudo apt-get install -y dirmngr")
+    cmds.append("sudo bash -c  'echo \"deb https://raspbian.snips.ai/$(lsb_release -cs) stable main\" > /etc/apt/sources.list.d/snips.list'")
+    cmds.append("sudo apt-key adv --keyserver pgp.mit.edu --recv-keys D4F50CDCA10A2849")
+    cmds.append("sudo apt-key adv --keyserver pgp.surfnet.nl --recv-keys D4F50CDCA10A2849")
+    cmds.append("sudo apt-get update")
+    cmds.append("sudo apt-get install -y snips-platform-voice")
+
+    if installType == "Main":
+        #full setup install
+        cmds.append("sudo apt-get install -y snips-platform-voice")
+
+    else:
+        #just snips-audio-server
+        cmds.append("sudo apt-get install -y snips-audio-server")
+
+    #change hostname
+    cmds.append("sudo raspi-config nonint do_hostname {}".format(data['SNIPSNAME']))
+    cmds.append("sudo reboot")
+    
+    try:
+        sshconnect = SSHConnect()
+        stderr =  sshconnect.connectSudo(device=data,commands=cmds,socket=socketio,socketTopic="log",namespace="/info")
+        
+        if stderr:
+            socketio.emit('installError', '<br>Error installing Snips<br>{}'.format(stderr), namespace='/info')   
+        else:
+            #all good
+            data["HOSTNAME"] = data['SNIPSNAME'] #cause it changed
+            addDeviceInfoToDB(data)
+            socketio.emit('installComplete', "install complete!", namespace='/info')
+
+    except Exception as e:
+        socketio.emit('installError', '<br>Error installing Snips<br>{}'.format(e), namespace='/info')   
+
+
+
+
+
+'''
+    dict['FUNCTION'] = setuptype;
+    dict['HOSTNAME'] = $("#inputHostname").val();
+    dict['OS'] = $("input:radio[name=grpRadios1]:checked").val();
+    dict['USER'] = $("#inputUsername").val();
+    dict['PASSWORD'] = $("#inputPassword").val();
+    dict['SNIPSNAME'] = $("#inputSnipsName").val();
+
+'''

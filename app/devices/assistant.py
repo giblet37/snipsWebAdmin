@@ -7,7 +7,7 @@
 # Created Date: Sunday, May 27th 2018, 10:39:55 pm
 # Author: Greg
 # -----
-# Last Modified: Sat Jun 02 2018
+# Last Modified: Mon Jun 04 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -142,7 +142,7 @@ def get_assistant_table(snippets=[], snipsyaml=''):
         for si in snippets.split("<br>"):
             snippets_items.append(SnippetItem(name=si))
 
-        ##print(assistant_items)
+        #print(assistant_items)
         #print(assistant_slots)
         #print(snippets_items)
         table_assistant = ItemTable(assistant_items)

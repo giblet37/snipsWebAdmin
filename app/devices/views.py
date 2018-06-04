@@ -196,9 +196,12 @@ def load_device_data_handler(data):
             if dev[0]['FUNCTION'] == "Main":
                 slots = []
                 #print(returnedData['slots'][1][0:-4])
-                data = json.loads(returnedData['slots'][1][0:-4])
-                for item in data["dataset_metadata"]["entities"]:
-                    slots.append(item)
+                try:
+                    data = json.loads(returnedData['slots'][1][0:-4])
+                    for item in data["dataset_metadata"]["entities"]:
+                        slots.append(item)
+                except:
+                    logger.info("no assistant file installed")
 
                 canInject = ""
               
@@ -220,11 +223,36 @@ def load_device_data_handler(data):
                 table_services = services.get_snips_service_table(dev[0],returnedData['services'][1])
                 
                 table_assistant, table_slots, table_snippets = assistant.get_assistant_table(returnedData['snippets'][1],returnedData['snipsyaml'][1])
-                socketio.emit('hereistheassistanttable', table_assistant.__html__(), namespace='/device')
-                socketio.emit('hereistheskillstable', table_slots.__html__(), namespace='/device')
-                socketio.emit('hereisthesnippetstable', table_snippets.__html__(), namespace='/device')
-                socketio.emit('hereistheservicestable', table_services.__html__(), namespace='/device')
-                socketio.emit('hereistheinjection', html, namespace='/device')
+                try:
+                    socketio.emit('hereistheassistanttable', table_assistant.__html__(), namespace='/device')
+                except:
+                    socketio.emit('hereistheassistanttable', "No Assistant Installed", namespace='/device')
+
+                try:
+                    socketio.emit('hereistheskillstable', table_slots.__html__(), namespace='/device')
+                except:
+                    socketio.emit('hereistheskillstable', "", namespace='/device')
+
+                try:
+                    socketio.emit('hereisthesnippetstable', table_snippets.__html__(), namespace='/device')
+                except:
+                    socketio.emit('hereisthesnippetstable', "", namespace='/device')
+
+                try:
+                    socketio.emit('hereistheservicestable', table_services.__html__(), namespace='/device')
+                except:
+                    socketio.emit('hereistheservicestable', "error loading services info", namespace='/device')
+
+                try:
+                    socketio.emit('hereistheinjection', html, namespace='/device')
+                except:
+                    socketio.emit('hereistheinjection', "error", namespace='/device')
+                
+                
+                
+                
+                
+                
             del returnedData["snippets"]
             del returnedData["services"]
             del returnedData["snipsyaml"]
