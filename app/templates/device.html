@@ -63,9 +63,10 @@
         });
     </script>
 {% else %}
-    <br>
-    <div class="alert alert-danger" role="alert">
-        Can not connect to the MQTT server. Check the settings.toml MQTT settings.
+    <div class="page-header mt-3">
+        <div class="alert alert-danger" role="alert">
+            Can not connect to the MQTT Server. Check your config file settings.
+        </div>
     </div>
 {% endif %}
 
