@@ -11,16 +11,15 @@
 <style>
     html, body { height: 100%; margin: 0; padding: 0; }
     .content { height: 100%; margin-bottom: 10px}
-    #editor,#syslogview { width:100%; overflow-y: scroll; overflow-x: scroll; padding: 10px; resize: none; background-color: #444; color: white; font-size: 14px; font-family: monospace;}
+    #editor { width:100%; overflow-y: scroll; overflow-x: scroll; padding: 10px; resize: none; background-color: #444; color: white; font-size: 14px; font-family: monospace;}
     .container { width: 100%; padding-right: 0px; padding-left: 0px;}
-    #syslogview1 { white-space: nowrap; display: block; overflow: hidden; overflow-y:scroll; padding: 10px;  min-height: 100%; resize: none;background-color: #444; color: white; font-size: 14px; font-family: monospace;}
     
     .serviceActive {color: green; font-weight: bold;}
     .serviceInactive {color: red; font-weight: bold;}
     .serviceActivating {color: blue; font-weight: bold;}
     .my-name-class {width:50%;}
 
-    #updatelogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
+    #installlogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
 
     table.table-sm tr:hover td {background-color: #F8F8F8;}
     table.table-sm tr img {visibility:hidden;cursor: pointer;}
@@ -103,21 +102,18 @@
                         <label for="inputHostname" class="col-sm-2 col-form-label">Hostname</label>
                         <div class="col-sm-10">
                             <input type="text" required class="form-control" id="inputHostname" name="inputHostname" placeholder="Hostname or IP. EX: for a new RPi enter raspberrypi">
-                            
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="inputUsername" class="col-sm-2 col-form-label">Username</label>
                         <div class="col-sm-10">
                             <input type="text" required class="form-control" id="inputUsername" name="inputUsername" placeholder="Login username">
-                            
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
                         <div class="col-sm-10">
                             <input type="text" required class="form-control" id="inputPassword" name="inputPassword" placeholder="Login password">
-                            
                         </div>
                     </div>
                     <fieldset class="form-group">
@@ -125,19 +121,19 @@
                             <legend class="col-form-label col-sm-2 pt-0">Operating System</legend>
                             <div class="col-sm-10">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gridRadios1" id="gridRadios1" value="Linux" checked>
+                                    <input class="form-check-input" type="radio" name="grpRadios1" id="gridRadios1" value="Linux" checked>
                                     <label class="form-check-label" for="gridRadios1">
                                         Linux
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gridRadios1" id="gridRadios2" value="Ubuntu" disabled>
+                                    <input class="form-check-input" type="radio" name="grpRadios1" id="gridRadios2" value="Ubuntu" disabled>
                                     <label class="form-check-label" for="gridRadios2">
                                         Ubuntu
                                     </label>
                                 </div>
                                 <div class="form-check disabled">
-                                    <input class="form-check-input" type="radio" name="gridRadios1" id="gridRadios3" value="Debian" disabled>
+                                    <input class="form-check-input" type="radio" name="grpRadios1" id="gridRadios3" value="Debian" disabled>
                                     <label class="form-check-label" for="gridRadios3">
                                         Debian
                                     </label>
@@ -150,23 +146,31 @@
                             <legend class="col-form-label col-sm-2 pt-0">Snips Installation</legend>
                             <div class="col-sm-10">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gridRadios2" id="gridRadios4" value="option1" checked>
+                                    <input class="form-check-input" type="radio" name="grpRadios2" id="gridRadios4" value="none" checked>
                                     <label class="form-check-label" for="gridRadios4">
                                         No Install - Device is already setup. Just add device info to Web Admin.
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gridRadios2" id="gridRadios5" value="option1" disabled>
+                                    <input class="form-check-input" disabled type="radio" name="grpRadios2" id="gridRadios5" value="main">
                                     <label class="form-check-label" for="gridRadios5">
                                         Snips Main - Install with all services
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gridRadios2" id="gridRadios6" value="option2" disabled>
+                                    <input class="form-check-input" disabled type="radio" name="grpRadios2" id="gridRadios6" value="satellite">
                                     <label class="form-check-label" for="gridRadios6">
                                         Snips Satellite - Install minimum services needed
                                     </label>
                                 </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="form-group" id="extra" style="display: none;">
+                        <div class="form-group row">
+                            <label for="inputSnipsName" class="col-sm-2 col-form-label">Snips Device Name</label>
+                            <div class="col-sm-10">
+                                <input type="text" required class="form-control" id="inputSnipsName" name="inputSnipsName" placeholder="Unqiue Snips Device Name (also the device Hostname is set to this)">
                             </div>
                         </div>
                     </fieldset>
@@ -181,7 +185,22 @@
     
 </div>
 
-
+<!-- Modal install snips software -->
+<div class="modal" id="installModal" tabindex="-1" role="dialog" aria-labelledby="installModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="installModalTitle">Installing Snips Software...</h5>
+            </div>
+            <div class="modal-body" id="msgbody">
+                <div name="installlogview" id="installlogview" contenteditable="false"></div>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closebox()" id="btnInstallClose" data-dismiss="modal" style="visibility: visible;">Close</button>
+                </div>
+        </div>
+    </div>
+</div>
 
 
 <script type="text/javascript">
@@ -206,8 +225,20 @@
         var path = window.location.search;
         if (path == "?new") {
             document.getElementById("info").style.display = "none";
-        document.getElementById("newdevice").style.display = "block";
+            document.getElementById("newdevice").style.display = "block";
         }
+
+        $("input[name=grpRadios2]").on("change", function()
+        {
+            var val = $("input:radio[name=grpRadios2]:checked").val();
+            if (val == "none") {
+                document.getElementById("extra").style.display = "none";
+            }
+            else {
+                document.getElementById("extra").style.display = "block";
+            }
+        });
+        
     });
 
     function addNewDevice(cmd) {
@@ -236,14 +267,28 @@
             var dict = {};
             dict['FUNCTION'] = "Satellite";
             dict['HOSTNAME'] = $("#inputHostname").val();
-            dict['OS'] = $("input:radio[name=gridRadios1]:checked").val();
+            dict['OS'] = $("input:radio[name=grpRadios1]:checked").val();
             dict['USER'] = $("#inputUsername").val();
             dict['PASSWORD'] = $("#inputPassword").val();
             //console.log(dict);
             socket.emit('justaddHost', { data:dict });
         } else {
-            alert( "install software too!" );
+            //alert( "install software too!" );
+            alert($("input:radio[name=grpRadios2]:checked").val());
+            $('#installModal').modal({
+                backdrop: 'static',
+                keyboard: false
+            })
         }
+    }
+
+    function closebox(){
+        $("#inputHostname").val('');
+        $("#inputUsername").val('');
+        $("#inputPassword").val('');
+        $("#inputSnipsName").val('');
+        $("#gridRadios1").prop("checked", true);
+        $("#gridRadios4").prop("checked", true);
     }
 
     socket.on('addComplete', function (data) {
@@ -251,7 +296,9 @@
         $("#inputHostname").val('');
         $("#inputUsername").val('');
         $("#inputPassword").val('');
-        $("gridRadios4").checked = true;
+        $("#inputSnipsName").val('');
+        $("#gridRadios1").prop("checked", true);
+        $("#gridRadios4").prop("checked", true);
     });
     
 
@@ -287,7 +334,13 @@
                 "hostip": true
             },
             inputUsername: "required",
-            inputPassword: "required"
+            inputPassword: "required",
+            inputSnipsName: {
+                required: { depends: function() {
+                    return (($('input[name=grpRadios2]:checked').val() == 'main') || ($('input[name=grpRadios2]:checked').val() == 'main'));
+                    }
+                }
+            }
         },
         messages: {
             inputHostname: {
@@ -320,6 +373,15 @@
     
 </script>
 
+<script>
+
+    //socket returning install info to display
+    socket.on('log', function (msg) {
+        var ed = document.getElementById("installlogview");
+        ed.innerHTML += msg;
+        ed.scrollTop = ed.scrollHeight;
+    });
+</script>
 
 
 
