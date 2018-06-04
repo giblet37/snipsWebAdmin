@@ -96,9 +96,11 @@ def devicePage():
         
         return render_template('devices.html',devicelist=devs,field="YES")
     except Exception as e:
-        logger.error(e)
-        socketio.on_event('scanDevices', scan_devices, namespace='/devices') #YES DEVICES..DONT CHANGE
-        return render_template('device.html',firstrun="YES")
+        if mqtt.connected:
+            socketio.on_event('scanDevices', scan_devices, namespace='/devices') #YES DEVICES..DONT CHANGE
+            return render_template('device.html',firstrun="YES")
+        else:
+            return render_template('device.html',firstrun="MQTT")
        
 def scan_devices(data):
 

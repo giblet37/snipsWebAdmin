@@ -9,11 +9,8 @@ Werkzeug==0.12.2
 toml
 pyyaml
 flask_table
-#Flask-WTF
 flask-socketio
-#WTForms
 paho-mqtt
-gevent
 paramiko
 
 

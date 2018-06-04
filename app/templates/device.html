@@ -4,6 +4,7 @@
 
 {% block page_content %}
 
+{% if firstrun == "YES" %}
 
     <!-- Modal first run.. setup devices-->
     <div class="modal" id="scanModalCenter" tabindex="-1" role="dialog" aria-labelledby="scanModalCenterTitle" aria-hidden="true">
@@ -61,5 +62,11 @@
             
         });
     </script>
+{% else %}
+    <br>
+    <div class="alert alert-danger" role="alert">
+        Can not connect to the MQTT server. Check the settings.toml MQTT settings.
+    </div>
+{% endif %}
 
 {% endblock %}
