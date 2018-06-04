@@ -4,6 +4,23 @@
 
 {% block page_content %}
 
+<style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    .container { display: table; }
+    .content { height: 100%; }
+    .container { width: 100%; padding-right: 0px; padding-left: 0px;}
+    .table {margin-bottom: 0px;}
+    
+</style>
+
+{% if MQTT == "NO" %}
+    <div class="page-header mt-3">
+        <div class="alert alert-danger" role="alert">
+            Can not connect to the MQTT Server. Check your config file settings.
+        </div>
+    </div>
+{% endif %}
+
 <div class="row mt-3">
     <div class="col-sm-6">
         <div class="card">

@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Sat Jun 02 2018
+# Last Modified: Mon Jun 04 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -34,12 +34,15 @@
 
 
 from flask import render_template, current_app, jsonify
-#from flask_table import Table, Col, html 
 from . import home
-
+from app import mqtt
 
 
 @home.route('/')
 def homePage():
 
-    return render_template('index.html')
+    MQTT = 'NO'
+    if mqtt.connected:
+        MQTT="YES"
+
+    return render_template('index.html', MQTT=MQTT)
