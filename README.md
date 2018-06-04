@@ -4,8 +4,7 @@ Check out a short video on what this does and how to use it
 https://youtu.be/gGwnzSOB9Nc
 
 
-
-Install this to the main RPi snips instance (not satellite devices)
+if installing this to a RPi make sure to run "sudo apt-get update" for the latest files
 
     #install pip
     sudo apt-get install python-pip python-git
@@ -20,7 +19,7 @@ Install this to the main RPi snips instance (not satellite devices)
 # Starting web console
 
 
-    #alter the settings.yml file in the base directory
+    #alter the settings.toml file in the base directory
     change the MQTT settings to match as needed
     
     #start
