@@ -218,13 +218,15 @@ def installsnips(data):
     #connectSudo(self, device, commands=[], socket=None, socketTopic="", namespace=None):
     cmds = [] #install commands
 
+    
+
     cmds.append("sudo apt-get update")
     cmds.append("sudo apt-get install -y dirmngr")
     cmds.append("sudo bash -c  'echo \"deb https://raspbian.snips.ai/$(lsb_release -cs) stable main\" > /etc/apt/sources.list.d/snips.list'")
     cmds.append("sudo apt-key adv --keyserver pgp.mit.edu --recv-keys D4F50CDCA10A2849")
     cmds.append("sudo apt-key adv --keyserver pgp.surfnet.nl --recv-keys D4F50CDCA10A2849")
     cmds.append("sudo apt-get update")
-    cmds.append("sudo apt-get install -y snips-platform-voice")
+    
 
     if installType == "Main":
         #full setup install
@@ -236,6 +238,16 @@ def installsnips(data):
 
     #change hostname
     cmds.append("sudo raspi-config nonint do_hostname {}".format(data['SNIPSNAME']))
+    #install snips.toml file
+    filestring = open(current_app.config['SNIPS_TOML_DUMMY'], "r") 
+    filestring = filestring.read()
+    filestring = filestring.replace("# mqtt = localhost:1883", "mqtt = {}:{}".format(current_app.config['MQTT_BROKER_URL']), current_app.config['MQTT_BROKER_PORT']))
+    filestring = filestring.replace("# bind = 0.0.0.0:26300", "bind = {}@mqtt".format(data['SNIPSNAME']))
+    cmds.append('sudo -k echo "{}" > "/home/pi/snips.ttt"'.format(filestring.rstrip()))
+    cmds.append('sudo -k cp /home/pi/snips.ttt /etc/snips.toml')
+    cmds.append('sudo -k rm /home/pi/snips.ttt')
+   
+
     cmds.append("sudo reboot")
     
     try:
