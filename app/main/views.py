@@ -243,12 +243,12 @@ def installsnips(data):
     #filestring = filestring.replace("# mqtt = localhost:1883", "mqtt = \"{}:{}\"".format(current_app.config['MQTT_BROKER_URL'], current_app.config['MQTT_BROKER_PORT']))
     #filestring = filestring.replace("# bind = 0.0.0.0:26300", "bind = \"{}@mqtt\"".format(data['SNIPSNAME']))
     cmds.append('sudo -k rm /home/pi/snips.ttt')
-    cmds.append("sudo -k echo '{}' > '/home/pi/snips.ttt'".format(filestring.rstrip()))
+    cmds.append('sudo -k echo "{}" > "/home/pi/snips.ttt"'.format(filestring.rstrip()))
     cmds.append('sudo -k cp /home/pi/snips.ttt /etc/snips.toml')
     cmds.append('sudo -k rm /home/pi/snips.ttt')
 
-    cmds.append("sed -i 's/# mqtt = localhost:1883/mqtt = \"{}:{}\"/g' /etc/snips.toml".format(current_app.config['MQTT_BROKER_URL'], current_app.config['MQTT_BROKER_PORT']))
-    cmds.append("sed -i 's/# bind = 0.0.0.0:26300/bind = \"{}@mqtt\"/g' /etc/snips.toml".format(data['SNIPSNAME']))
+    cmds.append("sudo -k sed -i 's/# mqtt = localhost:1883/mqtt = \"{}:{}\"/g' /etc/snips.toml".format(current_app.config['MQTT_BROKER_URL'], current_app.config['MQTT_BROKER_PORT']))
+    cmds.append("sudo -k sed -i 's/# bind = 0.0.0.0:26300/bind = \"{}@mqtt\"/g' /etc/snips.toml".format(data['SNIPSNAME']))
    
     #change hostname
     cmds.append("sudo raspi-config nonint do_hostname {}".format(data['SNIPSNAME']))
