@@ -316,6 +316,7 @@
         btn.style.visibility = 'visible';
         var ed = document.getElementById("installlogview");
         ed.innerHTML += "<br>Install complete. Device may be currently rebooting..";
+        ed.scrollTop = ed.scrollHeight;
     });
 
     socket.on('installError', function (msg) {

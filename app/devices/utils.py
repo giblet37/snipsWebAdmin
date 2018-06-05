@@ -125,12 +125,12 @@ class SSHConnect():
                 stdout.readline() #removes from reading in the password line thats entered
                 
                 if socket:
-                    socket.emit(socketTopic, cmds, namespace=namespace)
+                    socket.emit(socketTopic, "{}<br>".format(cmds), namespace=namespace)
                     while True:
                         line = stdout.readline()
                         #print(line)
                         if line != '':
-                            text = line.rstrip() + "<br>"
+                            text = "{}<br>".format(line.rstrip())
                             socket.emit(socketTopic, text, namespace=namespace)
                         else:
                             break

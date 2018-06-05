@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:36:13 pm
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 04 2018
+# Last Modified: Tue Jun 05 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -91,10 +91,6 @@ def create_app(config_name):
 
     from generator import generator as generator_blueprint
     app.register_blueprint(generator_blueprint)
-
-   
-    from addnewdevice import addnewdevice as addnewdevice_blueprint
-    app.register_blueprint(addnewdevice_blueprint)
 
     socketio.init_app(app)
     

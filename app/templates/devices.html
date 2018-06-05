@@ -18,7 +18,9 @@
     .serviceActive {color: green; font-weight: bold;}
     .serviceInactive {color: red; font-weight: bold;}
     .serviceActivating {color: blue; font-weight: bold;}
-    .my-name-class {width:50%;}
+    .serviceOther {color: black; font-weight: bold;}
+    /*.my-name-class {width:50%;}*/
+    .actions {width:140px;}
 
     #updatelogview {padding: 10px; white-space: nowrap; display: block;  overflow-y:scroll; height:200px;background-color:#444; color: white; text-align: left; font-size: 14px; font-family: monospace;}
 
@@ -381,7 +383,56 @@
     
         var ed = document.getElementById("servicesdivview");
         ed.innerHTML = data;
+        inserttablecells();
     });
+
+    function generateButtons() {
+        //alert(itemfor);
+        s = "<button onclick='serviceRefreshItem(this)'><img src='{{ url_for('static', filename='refresh.png') }}' alt='refresh' title='Restart this server' /></button>&nbsp;";
+        s += "<button onclick='serviceStartItem(this)'><img src='{{ url_for('static', filename='start.png') }}' alt='start' title='Start this service if it is stopped' /></button>&nbsp;";
+        s += "<button onclick='serviceStopItem(this)'><img src='{{ url_for('static', filename='stop.png') }}' alt='stop' title='Stop this service if running' /></button>";
+        return s;
+    }
+
+    function inserttablecells() {
+        var myTable = document.getElementById("theservicetable");
+        for (var i = 0, row; row = myTable.rows[i]; i++) {
+           
+            if(row.cells[3].innerHTML == "Y") {
+                row.cells[3].innerHTML = generateButtons();
+            }
+        }
+    }
+
+    function socketemitService(handlename, service) {
+        var devSelected = document.getElementById("selectedDevice").value;
+        socket.emit(handlename, { 'device': devSelected, 'service': service });
+    }
+
+    function serviceRefreshItem(i) {
+        row = $(i).parent().parent().find("td")[0];
+        socketemitService("refreshservice", row.innerHTML);
+        cell = $(i).parent().parent().find("td")[2];
+        cell.className = 'serviceOther';
+        cell.innerHTML = "Restarting";
+    }
+
+    function serviceStartItem(i) {
+        row = $(i).parent().parent().find("td")[0];
+        socketemitService("startservice", row.innerHTML);
+        cell = $(i).parent().parent().find("td")[2];
+        cell.className = 'serviceOther';
+        cell.innerHTML = "Starting";
+    }
+
+    function serviceStopItem(i) {
+        row = $(i).parent().parent().find("td")[0];
+        socketemitService("disableservice", row.innerHTML);
+        cell = $(i).parent().parent().find("td")[2];
+        cell.className = 'serviceOther';
+        cell.innerHTML = "Disabled";
+
+    }
 
     function socketemit(handlename) {
         var devSelected = document.getElementById("selectedDevice").value;

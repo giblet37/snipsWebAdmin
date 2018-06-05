@@ -7,7 +7,7 @@
 # Created Date: Saturday, June 2nd 2018, 1:06:10 pm
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 04 2018
+# Last Modified: Tue Jun 05 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -68,13 +68,15 @@ class ActiveInactiveCol(Col):
                 attrs={'class': 'serviceNone'})
             
 class serviceItem(object):
-    def __init__(self, name, version, isActive):
+    def __init__(self, name, version, isActive, action):
         self.name = name
         self.version = version
         self.isActive = isActive
+        self.action = action
 
 class serviceItemTable(Table):
     no_items = 'No Snips services installed'
+    table_id = "theservicetable"
     classes = ['table']
     name = Col('Snips Service',
         # Apply this class to both the th and all tds in this column
@@ -90,6 +92,11 @@ class serviceItemTable(Table):
         # Apply this class to both the th and all tds in this column
         column_html_attrs={'class': 'my-name-class'},
         th_html_attrs={'class': 'table-active'},
+    )
+    action = Col('Action',
+        # Apply this class to both the th and all tds in this column
+        column_html_attrs={'class': 'my-name-class actions'},
+        th_html_attrs={'class': 'table-active actions'},
     )
 
 
@@ -108,8 +115,8 @@ def get_snips_service_table(device={},services={}):
         
             if is_Service[0] == "loaded":
                 is_active = is_Service[1]
-                listItems.append(serviceItem(service[0], version ,is_active.capitalize()))
+                listItems.append(serviceItem(service[0], version ,is_active.capitalize(), "Y"))
             else:
-                listItems.append(serviceItem(service[0], version ,''))
+                listItems.append(serviceItem(service[0], version ,'', ''))
 
     return serviceItemTable(listItems)

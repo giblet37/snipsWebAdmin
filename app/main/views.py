@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 8:35:06 pm
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 04 2018
+# Last Modified: Tue Jun 05 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -213,7 +213,7 @@ def installsnips(data):
     password = data["PASSWORD"]
     installType = data["FUNCTION"]
 
-    print(data)
+    
 
     #connectSudo(self, device, commands=[], socket=None, socketTopic="", namespace=None):
     cmds = [] #install commands

@@ -93,9 +93,16 @@ def devicePage():
 
         socketio.on_event('updatesnips', updateSnips, namespace='/device')
         socketio.on_event('restartsnipsservices', restartSnipsServices, namespace='/device')
+
+        socketio.on_event('refreshservice', refreshSnipsService, namespace='/device')
+        socketio.on_event('startservice', startSnipsService, namespace='/device')
+        socketio.on_event('disableservice', disableSnipsService, namespace='/device')
+        
+        socketio.on_event('reloadServicesTable', reloadServicesTable, namespace='/device')
         
         return render_template('devices.html',devicelist=devs,field="YES")
     except Exception as e:
+        print(e)
         if mqtt.connected:
             socketio.on_event('scanDevices', scan_devices, namespace='/devices') #YES DEVICES..DONT CHANGE
             return render_template('device.html',firstrun="YES")
@@ -423,8 +430,79 @@ def restartSnipsServices(data):
             socketio.emit('restartServicesComplete', '<br>Error Restarting Snips Services<br>{}'.format(e), namespace='/device')   
 
 
-        #all done and finished.. show the close button   
-        socketio.emit('restartServicesComplete', 'Complete<br><br>Refresh page to view any changes', namespace='/device')
+        #all done and finished.. reload table view
+        reloadServicesTable(data)
+        # show the close button   
+
+        socketio.emit('restartServicesComplete', 'Complete<br><br>', namespace='/device')
 
 
+def reloadServicesTable(data):
+    if isinstance(data['device'], basestring):
+        commandsList = {"services": "dpkg-query -W -f=\'${binary:Package} ${Version}\n\' \'snips-*\'" }
+
+        returnedData = ''
+        try:
+            global db 
+            devicelist = db.get_toml_data("DEVICES")
+        
+            dev = filter(lambda x : x['HOSTNAME'] == data['device'], devicelist) 
+    
+            sshconnect = SSHConnect()
+            returnedData =  sshconnect.connectDevice(device=dev[0], commands=commandsList)
+        except:
+            pass
+        
+
+
+        if type(returnedData) == dict:
+            returnedData['function'] = dev[0]['FUNCTION']
+            
+            table_services = services.get_snips_service_table(dev[0],returnedData['services'][1])
+            try:
+                socketio.emit('hereistheservicestable', table_services.__html__(), namespace='/device')
+            except:
+                socketio.emit('hereistheservicestable', "error loading services info", namespace='/device')
+
+
+def workservice(device, service, status):
+    if isinstance(device, basestring):
+        commandsList = [] #['sudo -S systemctl {} {}'.format(status, service)]
+
+        if status == 'restart':
+            commandsList = ['sudo -S systemctl restart {}'.format(service)]
+        elif status == 'start':
+            commandsList = ['sudo -S systemctl enable {}'.format(service),'sudo -S systemctl start {}'.format(service)]
+        else:
+            commandsList = ['sudo -S systemctl stop {}'.format(service),'sudo -S systemctl disable {}'.format(service)]
+
+
+        print(commandsList)
+        global db 
+        devicelist = db.get_toml_data("DEVICES")
+        dev = filter(lambda x : x['HOSTNAME'] == device, devicelist) 
+        dev = dev[0]
+
+        try:
+            sshconnect = SSHConnect()
+            stderr =  sshconnect.connectSudo(device=dev, commands=commandsList)
+            
+            if stderr:
+                socketio.emit('restartServicesComplete', '<br>Error Restarting Snips Services<br>{}'.format(stderr), namespace='/device')
+                
+        except Exception as e:
+            pass
+
+
+        #all done and finished.. reload service table on the page   
+        reloadServicesTable({'device': device})
+
+def refreshSnipsService(data):
+    workservice(data['device'], data['service'], 'restart')
+
+def startSnipsService(data):
+    workservice(data['device'], data['service'], 'start')
+
+def disableSnipsService(data):
+    workservice(data['device'], data['service'], 'disable')
 
