@@ -236,17 +236,22 @@ def installsnips(data):
         #just snips-audio-server
         cmds.append("sudo apt-get install -y snips-audio-server")
 
-    #change hostname
-    cmds.append("sudo raspi-config nonint do_hostname {}".format(data['SNIPSNAME']))
+    
     #install snips.toml file
     filestring = open(current_app.config['SNIPS_TOML_DUMMY'], "r") 
     filestring = filestring.read()
-    filestring = filestring.replace("# mqtt = localhost:1883", "mqtt = \"{}:{}\"".format(current_app.config['MQTT_BROKER_URL'], current_app.config['MQTT_BROKER_PORT']))
-    filestring = filestring.replace("# bind = 0.0.0.0:26300", "bind = \"{}@mqtt\"".format(data['SNIPSNAME']))
-    cmds.append('sudo -k echo "{}" > "/home/pi/snips.ttt"'.format(filestring.rstrip()))
+    #filestring = filestring.replace("# mqtt = localhost:1883", "mqtt = \"{}:{}\"".format(current_app.config['MQTT_BROKER_URL'], current_app.config['MQTT_BROKER_PORT']))
+    #filestring = filestring.replace("# bind = 0.0.0.0:26300", "bind = \"{}@mqtt\"".format(data['SNIPSNAME']))
+    cmds.append('sudo -k rm /home/pi/snips.ttt')
+    cmds.append("sudo -k echo '{}' > '/home/pi/snips.ttt'".format(filestring.rstrip()))
     cmds.append('sudo -k cp /home/pi/snips.ttt /etc/snips.toml')
     cmds.append('sudo -k rm /home/pi/snips.ttt')
+
+    cmds.append("sed -i 's/# mqtt = localhost:1883/mqtt = \"{}:{}\"/g' /etc/snips.toml".format(current_app.config['MQTT_BROKER_URL'], current_app.config['MQTT_BROKER_PORT']))
+    cmds.append("sed -i 's/# bind = 0.0.0.0:26300/bind = \"{}@mqtt\"/g' /etc/snips.toml".format(data['SNIPSNAME']))
    
+    #change hostname
+    cmds.append("sudo raspi-config nonint do_hostname {}".format(data['SNIPSNAME']))
 
     cmds.append("sudo reboot")
     
@@ -267,14 +272,3 @@ def installsnips(data):
 
 
 
-
-
-'''
-    dict['FUNCTION'] = setuptype;
-    dict['HOSTNAME'] = $("#inputHostname").val();
-    dict['OS'] = $("input:radio[name=grpRadios1]:checked").val();
-    dict['USER'] = $("#inputUsername").val();
-    dict['PASSWORD'] = $("#inputPassword").val();
-    dict['SNIPSNAME'] = $("#inputSnipsName").val();
-
-'''
