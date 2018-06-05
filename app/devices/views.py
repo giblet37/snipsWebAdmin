@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 04 2018
+# Last Modified: Tue Jun 05 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -177,17 +177,23 @@ def load_device_data_handler(data):
                         "info": "cat /etc/os-release | grep \"PRETTY_NAME\" | cut -d= -f2; lscpu;",
                         "snippets": "ls -1 {}".format(current_app.config['SNIPS_ASSISTANT_SNIPPETDIR']),
                         "snipsyaml": "cat {}".format(current_app.config['SNIPS_ASSISTANT_SNIPSFILE']),
+                        "snipsjson": "cat {}".format(current_app.config['SNIPS_ASSISTANT_ASSISTANTFILE']),
                         "services": "dpkg-query -W -f=\'${binary:Package} ${Version}\n\' \'snips-*\'",
                         "caninject": "dpkg-query -W -f=\'${binary:Package} ${Version}\n\' snips-asr-injection",
                         "slots":"cat {}".format(current_app.config['SNIPS_ASSISTANT_TRAINEDASSISTANTFILE']) }
 
-        global db 
-        devicelist = db.get_toml_data("DEVICES")
+        returnedData = ''
+        try:
+            global db 
+            devicelist = db.get_toml_data("DEVICES")
+        
+            dev = filter(lambda x : x['HOSTNAME'] == data['device'], devicelist) 
     
-        dev = filter(lambda x : x['HOSTNAME'] == data['device'], devicelist) 
-  
-        sshconnect = SSHConnect()
-        returnedData =  sshconnect.connectDevice(device=dev[0], commands=commandsList)
+            sshconnect = SSHConnect()
+            returnedData =  sshconnect.connectDevice(device=dev[0], commands=commandsList)
+        except:
+            pass
+        
 
 
         if type(returnedData) == dict:
@@ -219,12 +225,12 @@ def load_device_data_handler(data):
                 # macro uses global variable `global_key` 
                 html = macro(canInject, slots)
 
-                #table_services = services.get_snips_service_table(dev[0],returnedData['services'][1].split("<br>"))
-                table_services = services.get_snips_service_table(dev[0],returnedData['services'][1])
                 
-                table_assistant, table_slots, table_snippets = assistant.get_assistant_table(returnedData['snippets'][1],returnedData['snipsyaml'][1])
+
+               
+                table_assistant, table_slots, table_snippets = assistant.get_assistant_table(returnedData['snippets'][1],returnedData['snipsyaml'][1],returnedData['snipsjson'][1])
                 try:
-                    socketio.emit('hereistheassistanttable', table_assistant.__html__(), namespace='/device')
+                    socketio.emit('hereistheassistanttable', table_assistant.__html__().replace("&amp;lt;br/&amp;gt;","<br>"), namespace='/device')
                 except:
                     socketio.emit('hereistheassistanttable', "No Assistant Installed", namespace='/device')
 
@@ -238,24 +244,28 @@ def load_device_data_handler(data):
                 except:
                     socketio.emit('hereisthesnippetstable', "", namespace='/device')
 
-                try:
-                    socketio.emit('hereistheservicestable', table_services.__html__(), namespace='/device')
-                except:
-                    socketio.emit('hereistheservicestable', "error loading services info", namespace='/device')
-
+               
                 try:
                     socketio.emit('hereistheinjection', html, namespace='/device')
                 except:
                     socketio.emit('hereistheinjection', "error", namespace='/device')
                 
                 
-                
+            #both Main and Satellite have services
+            #  #table_services = services.get_snips_service_table(dev[0],returnedData['services'][1].split("<br>"))
+            table_services = services.get_snips_service_table(dev[0],returnedData['services'][1])
+            try:
+                socketio.emit('hereistheservicestable', table_services.__html__(), namespace='/device')
+            except:
+                socketio.emit('hereistheservicestable', "error loading services info", namespace='/device')
+
                 
                 
                 
             del returnedData["snippets"]
             del returnedData["services"]
             del returnedData["snipsyaml"]
+            del returnedData["snipsjson"]
             del returnedData["slots"]
             socketio.emit('hereisthedeviceinfo', returnedData, namespace='/device')
         else:

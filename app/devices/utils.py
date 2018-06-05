@@ -7,7 +7,7 @@
 # Created Date: Sunday, May 6th 2018, 9:12:44 am
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 04 2018
+# Last Modified: Tue Jun 05 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -128,7 +128,7 @@ class SSHConnect():
                     socket.emit(socketTopic, cmds, namespace=namespace)
                     while True:
                         line = stdout.readline()
-                        print(line)
+                        #print(line)
                         if line != '':
                             text = line.rstrip() + "<br>"
                             socket.emit(socketTopic, text, namespace=namespace)
@@ -138,8 +138,8 @@ class SSHConnect():
                 stdout=stdout.readlines()
                 stderror=stderr.readlines()
 
-                logger.info("stdout: {}".format(stdout))
-                logger.info("stderror: {}".format(stderror))
+                #logger.info("stdout: {}".format(stdout))
+                #logger.info("stderror: {}".format(stderror))
 
                 if stderror:
                     errorlist.append(stderror)

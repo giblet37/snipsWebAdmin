@@ -7,7 +7,7 @@
 # Created Date: Sunday, May 27th 2018, 10:39:55 pm
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 04 2018
+# Last Modified: Tue Jun 05 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -36,6 +36,7 @@
 
 from flask_table import Table, Col, html 
 import yaml
+import json
 
 
             
@@ -45,7 +46,7 @@ class Item(object):
         self.description = description
 
 class ItemTable(Table):
-    no_items = 'Nothing to show'
+    no_items = 'No assistant installed'
     classes = ['table']
     name = Col(
         'Config Setting',
@@ -114,28 +115,50 @@ class SnippetItemTable(Table):
 
 
 
-def get_assistant_table(snippets=[], snipsyaml=''):
+def get_assistant_table(snippets=[], snipsyaml='', snipsjson=''):
     #slots
     #base info from file
     try:
         #******************* assistant info
         assitantdict = {}
         yaml_config = yaml.load(snipsyaml.replace("<br>","\n"))
-       
-        for k, v in yaml_config.items():
-            if  k != "skills":
-                assitantdict[k] = v
-            else:
-                assitantdict['slots'] = v
+        
+        try:
+            for k, v in yaml_config.items():
+                if  k != "skills":
+                    assitantdict[k] = v
+                else:
+                    assitantdict['slots'] = v
+        except:
+            pass
+        
     
         assistant_items = []
         assistant_slots = []
-        for key, value in assitantdict.items():
-            if key == "slots":
-                for v in value:
-                    assistant_slots.append(SkillsItem(v['name'],v['url']))
-            elif value != '':
-                assistant_items.append(Item(key, value))
+        try:
+            for key, value in assitantdict.items():
+                if key == "slots":
+                    for v in value:
+                        assistant_slots.append(SkillsItem(v['name'],v['url']))
+        except:
+            pass
+        
+        #******************* assistant json
+        try:
+            json_config = json.loads(snipsjson.replace("<br>","\n"))
+            assistant_items.append(Item("Project ID", json_config['id']))
+            assistant_items.append(Item("Assistant", json_config['name']))
+            assistant_items.append(Item("Language", json_config['language']))
+            assistant_items.append(Item("ASR Type", json_config['asr']['type']))
+            assistant_items.append(Item("Hotword", json_config['hotword']))
+            istring = ''
+            for it in json_config['intents']:
+                istring += "{}&lt;br/&gt;".format(it['name'])
+
+            assistant_items.append(Item("Intents", istring))
+        except:
+            pass
+            
      
         #******************* snippets
         snippets_items = []

@@ -315,7 +315,7 @@
         var btn = document.getElementById("btnInstallClose");
         btn.style.visibility = 'visible';
         var ed = document.getElementById("installlogview");
-        ed.innerHTML = "";
+        ed.innerHTML += "<br>Install complete. Device may be currently rebooting..";
     });
 
     socket.on('installError', function (msg) {
@@ -337,8 +337,11 @@
         ed.scrollTop = ed.scrollHeight;
     });
 
+
     $('#installModal').on('hidden.bs.modal', function (e) {
+        resetform();
         var ed = document.getElementById("installlogview");
+        ed.innerHTML = "";
         ed.style.visibility = 'visible';
         
         ed = document.getElementById("errormsg");
