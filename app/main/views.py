@@ -241,8 +241,8 @@ def installsnips(data):
     #install snips.toml file
     filestring = open(current_app.config['SNIPS_TOML_DUMMY'], "r") 
     filestring = filestring.read()
-    filestring = filestring.replace("# mqtt = localhost:1883", "mqtt = {}:{}".format(current_app.config['MQTT_BROKER_URL']), current_app.config['MQTT_BROKER_PORT']))
-    filestring = filestring.replace("# bind = 0.0.0.0:26300", "bind = {}@mqtt".format(data['SNIPSNAME']))
+    filestring = filestring.replace("# mqtt = localhost:1883", "mqtt = \"{}:{}\"".format(current_app.config['MQTT_BROKER_URL'], current_app.config['MQTT_BROKER_PORT']))
+    filestring = filestring.replace("# bind = 0.0.0.0:26300", "bind = \"{}@mqtt\"".format(data['SNIPSNAME']))
     cmds.append('sudo -k echo "{}" > "/home/pi/snips.ttt"'.format(filestring.rstrip()))
     cmds.append('sudo -k cp /home/pi/snips.ttt /etc/snips.toml')
     cmds.append('sudo -k rm /home/pi/snips.ttt')

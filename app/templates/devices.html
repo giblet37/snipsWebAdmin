@@ -414,7 +414,7 @@
         socketemitService("refreshservice", row.innerHTML);
         cell = $(i).parent().parent().find("td")[2];
         cell.className = 'serviceOther';
-        cell.innerHTML = "Restarting";
+        cell.innerHTML = "Restarting..";
     }
 
     function serviceStartItem(i) {
@@ -422,7 +422,7 @@
         socketemitService("startservice", row.innerHTML);
         cell = $(i).parent().parent().find("td")[2];
         cell.className = 'serviceOther';
-        cell.innerHTML = "Starting";
+        cell.innerHTML = "Starting..";
     }
 
     function serviceStopItem(i) {
@@ -430,7 +430,7 @@
         socketemitService("disableservice", row.innerHTML);
         cell = $(i).parent().parent().find("td")[2];
         cell.className = 'serviceOther';
-        cell.innerHTML = "Disabled";
+        cell.innerHTML = "Disabling..";
 
     }
 
