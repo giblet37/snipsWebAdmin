@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Thu May 31 2018
+# Last Modified: Mon Jun 11 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -227,11 +227,23 @@ def deleteslot(data):
 
 def savenewslot(data):
     global db
+  
 
-    cus = db.get_toml_data('Custom')
+    #cus = db.get_toml_data('Custom')
+    #print(cus)
+    #print(type(cus))
 
-    cus.append(data['heading'])
+    #cus.append(data['heading'])
 
-    db.set_toml_data('Custom',cus)
-    db.set_toml_data(data['heading'],data['slotinfo'].split("\n"))
+    #db.set_toml_data('Custom',cus)
+
+    #really want to make sure there are no blank lines
+    slotsdata = data['slotinfo']
+    slotsdata = slotsdata.replace("\n\n","\n")
+    slotsdata = slotsdata.replace("\n\n","\n")
+    slotsdata = slotsdata.replace("\n\n","\n")
+    slotsdata = slotsdata.replace("\n\n","\n")
+    slotsdata = slotsdata.replace("\n\n","\n")
+
+    db.set_new_slot_toml_data(data['heading'],slotsdata.split("\n"))
     db.save_toml_file()

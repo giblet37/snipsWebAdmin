@@ -7,7 +7,7 @@
 # Created Date: Tuesday, May 29th 2018, 6:12:46 pm
 # Author: Greg
 # -----
-# Last Modified: Sat Jun 02 2018
+# Last Modified: Mon Jun 11 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -86,12 +86,15 @@ class tomlDB():
 
     def set_slot_toml_data(self, slot, datain):
         datain = [x for x in datain if x] #remove empty list items
-        print(datain)
         for key in self.data:
             for k in self.data[key]:
                 if slot == k:
                     self.data[key][k] = datain
-       
+
+    def set_new_slot_toml_data(self, slot, datain):
+        datain = [x for x in datain if x] #remove empty list items
+        self.data["Custom"][slot] = datain
+         
 
     def save_toml_file(self):
         with open(self.file, 'w') as f:
