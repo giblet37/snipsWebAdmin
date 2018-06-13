@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 11 2018
+# Last Modified: Wed Jun 13 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -121,99 +121,114 @@ def getData():
 
 
 def generate(data):
-    global db
+    try:
+        global db
 
-    phrases = data['phrases'].split("\n")
-    phrases = filter(None, phrases)
-  
+        phrases = data['phrases'].split("\n")
+        phrases = filter(None, phrases)
 
-    sentencesTemp = data['sentences'].split("\n")
-    sentencesTemp = filter(None, sentencesTemp)
+        sentencesTemp = data['sentences'].split("\n")
+        sentencesTemp = filter(None, sentencesTemp)
 
 
-    sentences = []
+        sentences = []
 
-    if len(phrases) > 0:
-        for ph in phrases:
-            label = ph.split("=")
-            f = "#{}".format(label[0])
-            phrasewords = label[1].split(",")
-            for words in phrasewords:
-                for ss in sentencesTemp:
-                    sentences.append(ss.replace(f,words))
-    else:
-        sentences = sentencesTemp
-    
-    items = {}
-    built = []
-    stg = ''
-    slotvalues = ''
-    slotvalues = '<br>*********************************************************<br>'
-    slotvalues += '     edit each slot [Owner] and paste this into each       <br>'
-    slotvalues += '*********************************************************<br><br>'
-    consoletext = '*********************************************************<br>'
-    consoletext += '       copy and paste this into the slots import         <br>'
-    consoletext += '*********************************************************<br>'
-    slotcontents = '*********************************************************<br>'
-    slotcontents += '     copy and paste this into the Training Examples       <br>'
-    slotcontents += '*********************************************************<br>'
-    colors = {}
-
-    for key,value in data.iteritems():
-        if type(value) == dict:
-            vls = []
-            v = db.get_slot_toml_data(value['slot'])
+        if len(phrases) > 0:
+            for ph in phrases:
+                label = ph.split("=")
+                f = "#{}".format(label[0])
+                phrasewords = label[1].split(",")
+                for words in phrasewords:
+                    for ss in sentencesTemp:
+                        sentences.append(ss.replace(f,words.strip()))
+                if sentences:
+                    sentencesTemp = sentences
+                    sentences = []
          
-            if value['slot'].startswith("snips/") == False:
-                slotvalues += '<b>[{}]</b><br>'.format(value['slot'])
-                for l in v:
-                    slotvalues += "{}<br>".format(l) 
-                slotvalues += "<br>"
-            random.shuffle(v)
-            for l in v:
-                p = l.split(",")
-                for h in p:
-                    vls.append(h)
+        sentences = sentencesTemp
 
-            items[value['label']] = vls
-   
-            colors[value['label']] = value['color']
-            consoletext += '{}, {}'.format(value['label'],value['slot'])
-            if value['required'] == 'true':
-                consoletext += ", true"
-                if len(value['text']) > 0:
-                    consoletext += ", {}".format(value['text'])
-            consoletext += '<br>'
+        
+        items = {}
+        built = []
+        stg = ''
+        slotvalues = ''
+        slotvalues = '<br>*********************************************************<br>'
+        slotvalues += '     edit each slot [Owner] and paste this into each       <br>'
+        slotvalues += '*********************************************************<br><br>'
+        consoletext = '*********************************************************<br>'
+        consoletext += '       copy and paste this into the slots import         <br>'
+        consoletext += '*********************************************************<br>'
+        slotcontents = '*********************************************************<br>'
+        slotcontents += '     copy and paste this into the Training Examples       <br>'
+        slotcontents += '*********************************************************<br>'
+        colors = {}
 
-  
-    keys, values = zip(*items.items())
-    for v in itertools.product(*values):
-        experiment = dict(zip(keys, v))
-        built.append(experiment)
-
-    random.shuffle(built)
-
-    consoletext = "{}{}<br>{}".format(consoletext,slotvalues,slotcontents)
-
-    dictcheck = []
-    for builtitems in built:
-        for sent in sentences:
-            temp1 = sent
-            temp2 = sent
-            for key, value in builtitems.iteritems():
-                f = "${}".format(key)
-                m = "<span style='background-color: " + colors[key] + "'>" + value + "</span>"
-                c = "[{}]({})".format(value,key)
-                temp1 = temp1.replace(f,c)
-                temp2 = temp2.replace(f,m)
+        for key,value in data.iteritems():
+            if type(value) == dict:
+                vls = []
+                v = db.get_slot_toml_data(value['slot'])
             
-            if temp1 not in dictcheck:
-                dictcheck.append(temp1)
-                stg += temp2 + "<br>"
-                consoletext += temp1 + "<br>"
+                if value['slot'].startswith("snips/") == False:
+                    slotvalues += '<b>[{}]</b><br>'.format(value['slot'])
+                    for l in v:
+                        slotvalues += "{}<br>".format(l) 
+                    slotvalues += "<br>"
+                random.shuffle(v)
+                for l in v:
+                    p = l.split(",")
+                    for h in p:
+                        vls.append(h)
+
+                items[value['label']] = vls
+    
+                colors[value['label']] = value['color']
+                consoletext += '{}, {}'.format(value['label'],value['slot'])
+                if value['required'] == 'true':
+                    consoletext += ", true"
+                    if len(value['text']) > 0:
+                        consoletext += ", {}".format(value['text'])
+                consoletext += '<br>'
+
+        dictcheck = []
+
+        if items:
+            keys, values = zip(*items.items())
+            for v in itertools.product(*values):
+                experiment = dict(zip(keys, v))
+                built.append(experiment)
+
+            random.shuffle(built)
+
+            consoletext = "{}{}<br>{}".format(consoletext,slotvalues,slotcontents)
+
+            for builtitems in built:
+                for sent in sentences:
+                    temp1 = sent
+                    temp2 = sent
+                    for key, value in builtitems.iteritems():
+                        f = "${}".format(key)
+                        m = "<span style='background-color: " + colors[key] + "'>" + value + "</span>"
+                        c = "[{}]({})".format(value,key)
+                        temp1 = temp1.replace(f,c)
+                        temp2 = temp2.replace(f,m)
+                    
+                    if temp1 not in dictcheck:
+                        dictcheck.append(temp1)
+                        stg += temp2 + "<br>"
+                        consoletext += temp1 + "<br>"
+        else:
+            for sent in sentences:
+                if sent not in dictcheck:
+                    dictcheck.append(sent)
+                    stg += sent + "<br>"
+                    consoletext += sent + "<br>"
+                
 
 
-    socketio.emit('resultscode', {"code":consoletext,"html":stg, "count":len(dictcheck)}, namespace='/generator')
+        socketio.emit('resultscode', {"code":consoletext,"html":stg, "count":len(dictcheck)}, namespace='/generator')
+
+    except:
+        socketio.emit('generror', "Error generating training data. Check that all phrases and slots are referenced properly in the sentences.", namespace='/generator')
 
 def saveslot(data):
     global db

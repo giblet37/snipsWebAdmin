@@ -218,6 +218,26 @@ input:checked + .slider:before {
     </div>
 </div>
 
+<!-- Modal first run.. setup devices-->
+<div class="modal" id="generatingModal" tabindex="-1" role="dialog" aria-labelledby="generatingModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal" role="document">
+        <div class="modal-content">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="text-align: center;">
+                        <br><h3><b>Generating Data...</b></h3>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center;">
+                        <img src="{{ url_for('static', filename='animated_loading__by__amiri.gif') }}">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script>
 
 
@@ -463,14 +483,17 @@ input:checked + .slider:before {
         
         var countcontrol = document.getElementById("counter");
         countcontrol.innerHTML = msg['count'] + " items generated";
+
+        //hide modal
+        $('#generatingModal').modal('hide');
     });
 
     function generate(btn) {
-        var go = false;
+        console.log("OK")
+        var go = true;
         var slots = {};
         try {
             $('#slotsTable tr').each(function(){
-                go = true;
                 //console.log($(this));
                 //console.log($(this).prop('id'));
 
@@ -481,7 +504,7 @@ input:checked + .slider:before {
                 //console.log(td2.value);
                 if (td2.value.length == 0) {
                     throw "Each Slot entity must have a label!";
-                }
+                } 
 
                 var b = $(this).find('td').find('button')[0];
                 var slotval = $("#"+b.id+":first-child").val();
@@ -518,18 +541,29 @@ input:checked + .slider:before {
             go = false;
         }
         if (go) {
-            //console.log('keep working!!');
+            console.log('keep working!!');
             if ($('#tb').val() == '') {
                 alert('There are no sentences created!')
             } else {
                 //we work!!!
                 //console.log(slots);
+                //show generating modal view so they know something is happening
+                $('#generatingModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                })
                 slots["sentences"] = $('#tb').val();
                 slots["phrases"] = $('#phraseText').val();
                 socket.emit('generate', slots);
             }
         }
     }
+
+    socket.on('generror', function (msg) {
+       //hide modal
+       $('#generatingModal').modal('hide');
+       alert(msg);
+   });
 
 
 
