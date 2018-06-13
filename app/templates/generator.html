@@ -92,8 +92,14 @@ input:checked + .slider:before {
         <div class="card-header">
             <table class="table table-borderless table-sm">
                 <tr>
-                    <td style="vertical-align: middle">
+                    <td style="vertical-align: middle; width: 80px;">
                         <b>Slots</b>
+                    </td>
+                    <td>
+                        <select class="form-control" style="width:140px" id="language" onchange="langChange(this);">
+                            <option value="en">English</option>
+                            <option value="de">German</option>
+                        </select>
                     </td>
                     <td style=" text-align: right">
                         <button class="btn btn-secondary btn-sm" style="width: 100px;" type="button" id="btnAddSlot" onclick="addSlot(this)" value="Add Slot">
@@ -247,10 +253,32 @@ input:checked + .slider:before {
     var editingSlotName = '';
     var dropb = '';
     var ddl = '';
+    var lang = getCookie("language");
+
+    if (lang == "") {
+        document.cookie = "language=en";
+    } else {
+        document.getElementById("language").value = lang;
+    }
+
+
+    function getCookie(na)
+    {
+        var allcookies = document.cookie;
+        cookiearray = allcookies.split(';');
+        for(var i=0; i<cookiearray.length; i++){
+            name = cookiearray[i].split('=')[0];
+            if(name == na) {
+                return cookiearray[i].split('=')[1];
+            }
+        }
+        return '';
+    }
 
 
     //add a new table row for slot info
     function addSlot(ctl) {
+        document.getElementById("language").style = "visibility:hidden;"
         var table = document.getElementById("slotsTable");
         var row = table.insertRow();
         row.id = "row" + rownumSlot;
@@ -317,6 +345,10 @@ input:checked + .slider:before {
     function deleteRow(btn) {
         var row = btn.parentNode.parentNode.parentNode.parentNode;
         row.parentNode.removeChild(row);
+        var rowCount = document.getElementById('slotsTable').rows.length;
+        if(rowCount == 0){
+            document.getElementById("language").style = "visibility:visible;width:140px;"
+        }
     }
 
     function saveSlotInfo(btn) {
@@ -554,6 +586,7 @@ input:checked + .slider:before {
                 })
                 slots["sentences"] = $('#tb').val();
                 slots["phrases"] = $('#phraseText').val();
+                slots["language"] = $('#language option:selected').val();
                 socket.emit('generate', slots);
             }
         }
@@ -563,7 +596,18 @@ input:checked + .slider:before {
        //hide modal
        $('#generatingModal').modal('hide');
        alert(msg);
-   });
+    });
+
+    function langChange(sel)
+    {
+        document.cookie = "language=" + sel.value;
+        socket.emit('languageChange', {"language": sel.value});
+    }
+
+    socket.on('lang_changed', function (msg) {
+        var hiddenControl = document.getElementById("slotsList");
+        hiddenControl.value = msg;
+    });
 
 
 

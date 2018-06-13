@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:42:34 pm
 # Author: Greg
 # -----
-# Last Modified: Tue Jun 05 2018
+# Last Modified: Wed Jun 13 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -47,7 +47,7 @@ class Config:
     SECRET_KEY='Q5G94WB6RVRP4TO85RGI2Y6TM7HYY0P'
     SSL_REDIRECT = False
 
-    TOMLFILE = os.path.join(basedir,"data/db.toml")
+    TOMLFILE = os.path.join(basedir,"data/")
 
     SNIPS_DIR = os.environ.get('SNIPS_DIR', '/usr/share/snips/assistant')
     SNIPS_TOML = "/etc/snips.toml"

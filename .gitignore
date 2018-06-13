@@ -1,6 +1,5 @@
 *.pyc
 *.yaml
-*.toml
 
 .vscode/*
 #!.vscode/settings.json

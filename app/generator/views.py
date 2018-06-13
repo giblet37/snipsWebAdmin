@@ -51,17 +51,33 @@ from app.apptoml import tomlDB
 
 db = ''
 
+def LoadDB(lang="en"):
+    global db
+    f = "{}db-{}.toml".format( current_app.config['TOMLFILE'], lang )
+    print(f)
+    db = tomlDB(f)
+
+
 @generator.route('/generator')
 def generatorPage():
     global db
 
+    socketio.on_event('languageChange', languageChange, namespace='/generator')
     socketio.on_event('generate', generate, namespace='/generator')
     socketio.on_event('saveslot', saveslot, namespace='/generator')
     socketio.on_event('deleteslot', deleteslot, namespace='/generator')
     socketio.on_event('savenewslot', savenewslot, namespace='/generator')
     socketio.on_event('getSlotDropdownList', getSlotDropdownList, namespace='/generator')
 
-    db = tomlDB(current_app.config['TOMLFILE'])
+    co = request.cookies.get("language")
+    if not co:
+        co = "en"
+
+    LoadDB(co)
+
+
+
+   
     a = db.get_toml_data('Buildin')
     
     stg = ''
@@ -262,3 +278,24 @@ def savenewslot(data):
 
     db.set_new_slot_toml_data(data['heading'],slotsdata.split("\n"))
     db.save_toml_file()
+
+def languageChange(data):
+    LoadDB(data['language'])
+
+    global db
+
+    a = db.get_toml_data('Buildin')
+    
+    stg = ''
+    for item in a:
+        stg += "<li><a class='dropdown-item' href='#' onClick='dropClicked(this)' data-value='" + item + "'>" + item + "</a></li>"
+
+    stg += "<li><div class='dropdown-divider'></div></li>"
+
+    a = db.get_toml_data('Custom')
+  
+    for item in a:
+        stg += "<li><a class='dropdown-item' href='#' onClick='dropClicked(this)' data-value='" + item + "'>" + item + "</a></li>"
+      
+
+    socketio.emit('lang_changed', stg, namespace='/generator')
