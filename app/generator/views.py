@@ -54,7 +54,6 @@ db = ''
 def LoadDB(lang="en"):
     global db
     f = "{}db-{}.toml".format( current_app.config['TOMLFILE'], lang )
-    print(f)
     db = tomlDB(f)
 
 
