@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Wed Jun 13 2018
+# Last Modified: Thu Jun 14 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -151,7 +151,7 @@ def generate(data):
         if len(phrases) > 0:
             for ph in phrases:
                 label = ph.split("=")
-                f = "#{}".format(label[0])
+                f = "#{}".format(label[0].strip())
                 phrasewords = label[1].split(",")
                 for words in phrasewords:
                     for ss in sentencesTemp:
