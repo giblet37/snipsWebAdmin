@@ -7,7 +7,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Tue Jun 05 2018
+# Last Modified: Thu Jun 14 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -212,7 +212,8 @@ def load_device_data_handler(data):
                 try:
                     data = json.loads(returnedData['slots'][1][0:-4])
                     for item in data["dataset_metadata"]["entities"]:
-                        slots.append(item)
+                        if "snips/" not in item:
+                            slots.append(item)
                 except:
                     logger.info("no assistant file installed")
 
@@ -436,7 +437,6 @@ def restartSnipsServices(data):
 
         socketio.emit('restartServicesComplete', 'Complete<br><br>', namespace='/device')
 
-
 def reloadServicesTable(data):
     if isinstance(data['device'], basestring):
         commandsList = {"services": "dpkg-query -W -f=\'${binary:Package} ${Version}\n\' \'snips-*\'" }
@@ -463,7 +463,6 @@ def reloadServicesTable(data):
                 socketio.emit('hereistheservicestable', table_services.__html__(), namespace='/device')
             except:
                 socketio.emit('hereistheservicestable', "error loading services info", namespace='/device')
-
 
 def workservice(device, service, status):
     if isinstance(device, basestring):
