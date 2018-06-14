@@ -7,7 +7,7 @@
 # Created Date: Sunday, May 6th 2018, 9:12:44 am
 # Author: Greg
 # -----
-# Last Modified: Tue Jun 05 2018
+# Last Modified: Thu Jun 14 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -129,7 +129,10 @@ class SSHConnect():
                     while True:
                         line = stdout.readline()
                         #print(line)
-                        if line != '':
+                        if "The default action is to keep your current version" in line:
+                            stdin.write('N\n')
+                            stdin.flush()
+                        elif line != '':
                             text = "{}<br>".format(line.rstrip())
                             socket.emit(socketTopic, text, namespace=namespace)
                         else:
