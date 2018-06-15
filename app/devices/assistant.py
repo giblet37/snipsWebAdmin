@@ -7,7 +7,7 @@
 # Created Date: Sunday, May 27th 2018, 10:39:55 pm
 # Author: Greg
 # -----
-# Last Modified: Tue Jun 05 2018
+# Last Modified: Thu Jun 14 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -149,6 +149,7 @@ def get_assistant_table(snippets=[], snipsyaml='', snipsjson=''):
             assistant_items.append(Item("Project ID", json_config['id']))
             assistant_items.append(Item("Assistant", json_config['name']))
             assistant_items.append(Item("Language", json_config['language']))
+            assistant_items.append(Item("NLU Version", json_config['version']['nluModel']))
             assistant_items.append(Item("ASR Type", json_config['asr']['type']))
             assistant_items.append(Item("Hotword", json_config['hotword']))
             istring = ''

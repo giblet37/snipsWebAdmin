@@ -1,31 +1,10 @@
 [Buildin]
-"snips/datetime" = ["Montags",
-                    "am Dienstag",
-                    "heute",
-                    "in einem tag"]
-
-"snips/amountOfMoney" =  ["zehn dollar und fünf cent"]
-
-"snips/duration" = ["vier sekunden",
-                    "acht jahre",
-                    "sieben monate"]
-
-"snips/ordinal" =  ["zuerst",
-                    "zweite",
-                    "siebte"]
-
-"snips/number" = ["ein",
-                  "zwei",
-                  "neun"]
-
-"snips/temperature" =  ["dreiundzwanzig grad celsius",
-                        "dreizehn grad fahrenheit"]
-
-"snips/percentage" = ["zwanzig prozent",
-                      "sechzig prozent"]
-
-
+"snips/datetime" = [ "Montags", "am Dienstag", "heute", "in einem tag",]
+"snips/amountOfMoney" = [ "zehn dollar und f\u00fcnf cent",]
+"snips/duration" = [ "vier sekunden", "acht jahre", "sieben monate",]
+"snips/ordinal" = [ "zuerst", "zweite", "siebte",]
+"snips/number" = [ "ein", "zwei", "neun",]
+"snips/temperature" = [ "dreiundzwanzig grad celsius", "dreizehn grad fahrenheit",]
+"snips/percentage" = [ "zwanzig prozent", "sechzig prozent",]
 
 [Custom]
-"lage" = ["Hamburg"]
-

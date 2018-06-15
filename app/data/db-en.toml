@@ -8,4 +8,5 @@
 "snips/percentage" = [ "twenty percent", "sixty percent", "twenty seven percent", "two hundred percent", "thirty nine percent", "eighty three percent", "25%", "2%", "45%", "11%", "19%", "0%", "99%", "100%", "350%", "56%",]
 
 [Custom]
-locations = [ "New York, NY, New York City", "LA, la, las vegas"]
+locations = [ "New York, NY, New York City", "LA, la, las vegas",]
+TVShows = [ "the 100", "power", "the blacklist", "elementary", "doctor who", "westworld, west world", "shameless",]

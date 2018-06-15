@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 8:35:06 pm
 # Author: Greg
 # -----
-# Last Modified: Sat Jun 02 2018
+# Last Modified: Fri Jun 15 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -43,6 +43,9 @@ import re
 import time
 from datetime import datetime
 import json
+
+import logging
+logger = logging.getLogger('snipsWebAdmin-Watch')
 
 devices = []
 sessions = []
@@ -328,61 +331,75 @@ def format_nlu_intentNotRecognised(payload):
     return strg
 
 def format_nlu_error(payload):
-    global sessions
-    #[00:34:57] [Nlu] intent not recognized for "hawaii"
-    payload = json.loads(payload.decode('utf-8'))
+    try:
+        global sessions
+        #[00:34:57] [Nlu] intent not recognized for "hawaii"
+        payload = json.loads(payload.decode('utf-8'))
 
-    s = payload['sessionId']
-    if s in sessions:
-        return ''
-   
-    t = getTimeString()
-    error = payload['error']
-    context = ''
-    if 'context' in payload:
-        context = payload['context']
-
-    strg = TIME_FIELD + EVENT_NLU + " <b>Error:</b> \"" + error + "\" {}<br>"
-    strg = strg.format(t, '. {}'.format(context))
-
-    return strg
-
-def format_nlu_slotParsed(payload):
-    global sessions
-    #
-    payload = json.loads(payload.decode('utf-8'))
-
-    s = payload['sessionId']
-    if s in sessions:
-        return ''
-   
-    t = getTimeString()
-    inputstring = payload['input']
-    intentName = payload['intentName']
-    slottext = complete_slot_information(payload['slots'])
-
-
-    strg = TIME_FIELD + EVENT_NLU + " Partial query on \"" + intentName + "\" for  " + INTENT_STRING + "{}<br>{}"
-    strg = strg.format(t, inputstring,slottext)
-
-    return strg
-  
-def format_intent_posted(topic, payload):
-    global devices
-    #[07:41:24] [Nlu] was asked to parse input weather
-    payload = json.loads(payload.decode('utf-8'))
-
-    s = payload['siteId']
-    if s in devices:
+        s = payload['sessionId']
+        if s in sessions:
+            return ''
+    
         t = getTimeString()
+        error = payload['error']
+        context = ''
+        if 'context' in payload:
+            context = payload['context']
 
-        strg = TIME_FIELD + EVENT_INTENT + " Snips published " + INTENT_STRING + \
-            " for skill to use for site " + SITE_ID + "<br>"
-        strg = strg.format(t, topic, s)
+        strg = TIME_FIELD + EVENT_NLU + " <b>Error:</b> \"" + error + "\" {}<br>"
+        strg = strg.format(t, '. {}'.format(context))
 
         return strg
-    return ''
+    except:
+        return ''
 
+def format_nlu_slotParsed(payload):
+    try:
+        global sessions
+        #
+        payload = json.loads(payload.decode('utf-8'))
+
+        s = payload['sessionId']
+        if s in sessions:
+            return ''
+    
+        t = getTimeString()
+        inputstring = payload['input']
+        intentName = payload['intentName']
+        slottext = complete_slot_information(payload['slots'])
+
+
+        strg = TIME_FIELD + EVENT_NLU + " Partial query on \"" + intentName + "\" for  " + INTENT_STRING + "{}<br>{}"
+        strg = strg.format(t, inputstring,slottext)
+
+        return strg
+    except Exception as e:
+        logger.error(e)
+        logger.debug(payload)
+        return ''
+  
+def format_intent_posted(topic, payload):
+    try:
+        global devices
+        #[07:41:24] [Nlu] was asked to parse input weather
+        payload = json.loads(payload.decode('utf-8'))
+
+        s = payload['siteId']
+        if s in devices:
+            t = getTimeString()
+
+            strg = TIME_FIELD + EVENT_INTENT + " Snips published " + INTENT_STRING + \
+                " for skill to use for site " + SITE_ID + "<br>"
+            strg = strg.format(t, topic, s)
+
+            return strg
+        return ''
+    except Exception as e:
+        logger.error(e)
+        logger.debug(topic)
+        logger.debug(payload)
+        return ''
+    
 def format_dialogue_sessionstarted(payload):
     global sessions
     #[00:34:54] [Dialogue] session with id 'd38a01d9-f28d-4372-b18b-2f38b266d891' was started on site zero
@@ -583,7 +600,7 @@ def background():
         #print("bg")
         
         count += 1
-        if count == 2:
+        if count == 5:
             mqtt.unsubscribe_all()
             #print(devices)
         time.sleep(.5)

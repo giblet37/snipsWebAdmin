@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding:utf-8 -*-
+from __future__ import unicode_literals
 
 ### **************************************************************************** ###
 # 
@@ -7,7 +8,7 @@
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Thu Jun 14 2018
+# Last Modified: Fri Jun 15 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -48,6 +49,9 @@ import string
 import random
 import itertools
 from app.apptoml import tomlDB
+
+import logging
+logger = logging.getLogger('snipsWebAdmin-Generator')
 
 db = ''
 
@@ -128,7 +132,7 @@ def getData():
         a = db.get_slot_toml_data(heading)  
         s = ''
         for item in a:
-            s += "{}\n".format(item.encode('utf-8'))
+            s += "{}\n".format(item)
         return jsonify({'good':s})               
     
   
@@ -189,6 +193,7 @@ def generate(data):
                         slotvalues += "{}<br>".format(l) 
                     slotvalues += "<br>"
                 random.shuffle(v)
+          
                 for l in v:
                     p = l.split(",")
                     for h in p:
@@ -205,44 +210,51 @@ def generate(data):
                 consoletext += '<br>'
 
         dictcheck = []
-
+        
         if items:
             keys, values = zip(*items.items())
             for v in itertools.product(*values):
                 experiment = dict(zip(keys, v))
                 built.append(experiment)
-
+        
             random.shuffle(built)
 
             consoletext = "{}{}<br>{}".format(consoletext,slotvalues,slotcontents)
-
+         
             for builtitems in built:
                 for sent in sentences:
                     temp1 = sent
                     temp2 = sent
+                    print("1")
                     for key, value in builtitems.iteritems():
+                        print("2")
+                        print(value)
                         f = "${}".format(key)
                         m = "<span style='background-color: " + colors[key] + "'>" + value + "</span>"
                         c = "[{}]({})".format(value,key)
                         temp1 = temp1.replace(f,c)
                         temp2 = temp2.replace(f,m)
+                        print("3")
                     
                     if temp1 not in dictcheck:
                         dictcheck.append(temp1)
                         stg += temp2 + "<br>"
                         consoletext += temp1 + "<br>"
+                        print("4")
         else:
             for sent in sentences:
                 if sent not in dictcheck:
                     dictcheck.append(sent)
                     stg += sent + "<br>"
                     consoletext += sent + "<br>"
+                    print("5")
                 
 
-
+        print("6")
         socketio.emit('resultscode', {"code":consoletext,"html":stg, "count":len(dictcheck)}, namespace='/generator')
 
-    except:
+    except Exception as e:
+        logger.error(e)
         socketio.emit('generror', "Error generating training data. Check that all phrases and slots are referenced properly in the sentences.", namespace='/generator')
 
 def saveslot(data):

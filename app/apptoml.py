@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding:utf-8 -*-
+from __future__ import unicode_literals
 
 ### **************************************************************************** ###
 # 
@@ -7,7 +8,7 @@
 # Created Date: Tuesday, May 29th 2018, 6:12:46 pm
 # Author: Greg
 # -----
-# Last Modified: Mon Jun 11 2018
+# Last Modified: Fri Jun 15 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -61,7 +62,10 @@ class tomlDB():
         for key in self.data:
             for k in self.data[key]:
                 if slot == k:
-                    return self.data[key][k]
+                    items = self.data[key][k]
+                    #[x.decode('utf-8') for x in items]
+                    #print(items)
+                    return items
         return None
 
     #def delete_heading(self, heading):

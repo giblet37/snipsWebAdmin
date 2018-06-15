@@ -181,7 +181,7 @@ def load_device_data_handler(data):
     if isinstance(data['device'], basestring):
         commandsList = {"syslog":"tail -n 100 /var/log/syslog",
                         "toml":"cat {}".format(current_app.config['SNIPS_TOML']),
-                        "info": "cat /etc/os-release | grep \"PRETTY_NAME\" | cut -d= -f2; lscpu;",
+                        "info": "echo 'OS:' $(cat /etc/os-release | grep 'PRETTY_NAME' | cut -d= -f2 | tr -d '\"'); echo \"Up Time:\" $(uptime | sed -E 's/^[^,]*up *//; s/, *[[:digit:]]* users.*//; s/min/minutes/; s/([[:digit:]]+):0?([[:digit:]]+)/\\1 hours, \\2 minutes/'); lscpu;",
                         "snippets": "ls -1 {}".format(current_app.config['SNIPS_ASSISTANT_SNIPPETDIR']),
                         "snipsyaml": "cat {}".format(current_app.config['SNIPS_ASSISTANT_SNIPSFILE']),
                         "snipsjson": "cat {}".format(current_app.config['SNIPS_ASSISTANT_ASSISTANTFILE']),
