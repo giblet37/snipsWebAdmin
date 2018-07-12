@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Fri Jun 15 2018
+# Last Modified: Thu Jul 12 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -166,6 +166,8 @@ def generate(data):
          
         sentences = sentencesTemp
 
+
+
         
         items = {}
         built = []
@@ -209,48 +211,51 @@ def generate(data):
                         consoletext += ", {}".format(value['text'])
                 consoletext += '<br>'
 
+      
         dictcheck = []
         
         if items:
+            
             keys, values = zip(*items.items())
             for v in itertools.product(*values):
                 experiment = dict(zip(keys, v))
                 built.append(experiment)
         
             random.shuffle(built)
+          
+     
+            if len(built) > 200:
+                built = [built[:100], built[101:200]]
+            else:
+                built = [built]
+            
 
             consoletext = "{}{}<br>{}".format(consoletext,slotvalues,slotcontents)
-         
-            for builtitems in built:
+        
+            pi=0
+            for builtitems in built[pi]:
                 for sent in sentences:
                     temp1 = sent
                     temp2 = sent
-                    print("1")
                     for key, value in builtitems.iteritems():
-                        print("2")
-                        print(value)
                         f = "${}".format(key)
                         m = "<span style='background-color: " + colors[key] + "'>" + value + "</span>"
                         c = "[{}]({})".format(value,key)
                         temp1 = temp1.replace(f,c)
                         temp2 = temp2.replace(f,m)
-                        print("3")
                     
                     if temp1 not in dictcheck:
                         dictcheck.append(temp1)
                         stg += temp2 + "<br>"
                         consoletext += temp1 + "<br>"
-                        print("4")
+                pi=1
         else:
             for sent in sentences:
                 if sent not in dictcheck:
                     dictcheck.append(sent)
                     stg += sent + "<br>"
                     consoletext += sent + "<br>"
-                    print("5")
                 
-
-        print("6")
         socketio.emit('resultscode', {"code":consoletext,"html":stg, "count":len(dictcheck)}, namespace='/generator')
 
     except Exception as e:
@@ -269,15 +274,6 @@ def deleteslot(data):
 
 def savenewslot(data):
     global db
-  
-
-    #cus = db.get_toml_data('Custom')
-    #print(cus)
-    #print(type(cus))
-
-    #cus.append(data['heading'])
-
-    #db.set_toml_data('Custom',cus)
 
     #really want to make sure there are no blank lines
     slotsdata = data['slotinfo']
