@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:42:34 pm
 # Author: Greg
 # -----
-# Last Modified: Wed Jun 13 2018
+# Last Modified: Thu Jul 12 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -51,7 +51,7 @@ class Config:
 
     SNIPS_DIR = os.environ.get('SNIPS_DIR', '/usr/share/snips/assistant')
     SNIPS_TOML = "/etc/snips.toml"
-    SNIPS_TOML_DUMMY = os.path.join(os.path.dirname(basedir),"snips.toml")
+    SNIPS_TOML_DUMMY = os.path.join(os.path.dirname(basedir),"snips.conf")
     SNIPS_TOML_BACKUP = "/etc/snips.toml.bak"
     SNIPS_ASSISTANT_SNIPSFILE = os.path.join(SNIPS_DIR,"Snipsfile.yaml")
     SNIPS_ASSISTANT_ASSISTANTFILE = os.path.join(SNIPS_DIR,"assistant.json")
