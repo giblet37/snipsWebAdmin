@@ -1,5 +1,6 @@
 *.pyc
 *.yaml
+*.toml
 
 .vscode/*
 #!.vscode/settings.json
@@ -12,4 +13,6 @@
 app/data/db.yaml
 settings.yaml
 app/data/db.toml
+app/data/db-en.toml
+app/data/db-de.toml
 settings.toml

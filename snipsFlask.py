@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:12:41 pm
 # Author: Greg
 # -----
-# Last Modified: Sat Jun 02 2018
+# Last Modified: Thu Jul 12 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -42,8 +42,14 @@ import logging
 if os.path.isfile('./settings.toml') == False:
     copyfile('./settings.toml.conf', './settings.toml')
 
-if os.path.isfile('./app/data/db.toml') == False:
-    copyfile('./app/data/db.toml.conf', './app/data/db.toml')
+#if os.path.isfile('./app/data/db.toml') == False:
+#    copyfile('./app/data/db.toml.conf', './app/data/db.toml')
+
+if os.path.isfile('./app/data/db-en.toml') == False:
+    copyfile('./app/data/db-en.conf', './app/data/db-en.toml')
+
+if os.path.isfile('./app/data/db-de.toml') == False:
+    copyfile('./app/data/db-de.conf', './app/data/db-de.toml')
 
 
 from app import create_app, get_socketio
