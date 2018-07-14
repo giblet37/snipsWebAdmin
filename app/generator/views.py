@@ -164,7 +164,8 @@ def generate(data):
                     sentencesTemp = sentences
                     sentences = []
          
-        sentences = sentencesTemp
+        #sentences = sentencesTemp
+        sentences = list(set(sentencesTemp))
         
         items = {}
         built = []
@@ -225,7 +226,7 @@ def generate(data):
             pi = 0
      
             for sent in sentences:
-                for x in range(0, 3): #loop 3 times.. create 3 sentences from slot values for each sentence
+                for x in range(0, 2): #loop 3 times.. create 3 sentences from slot values for each sentence
                     temp1 = sent
                     temp2 = sent
                     d = built[pi]
