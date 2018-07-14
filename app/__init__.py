@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 6:36:13 pm
 # Author: Greg
 # -----
-# Last Modified: Tue Jun 05 2018
+# Last Modified: Sat Jul 14 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -61,6 +61,8 @@ def create_app(config_name):
 
     try:
         tomlDict = toml.load('./settings.toml')
+        for key, value in tomlDict['APP'].iteritems():
+            app.config[key] = value
         for key, value in tomlDict['MQTT'].iteritems():
             app.config[key] = value
         for key, value in tomlDict['SSH'].iteritems():

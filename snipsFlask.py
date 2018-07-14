@@ -7,7 +7,7 @@
 # Created Date: Friday, April 27th 2018, 7:12:41 pm
 # Author: Greg
 # -----
-# Last Modified: Thu Jul 12 2018
+# Last Modified: Sat Jul 14 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -70,5 +70,5 @@ logging.getLogger('werkzeug').setLevel(logging.ERROR)
 logging.getLogger('paramiko').setLevel(logging.ERROR)
 
 
-sock.run(app, host='0.0.0.0', port=5000, log_output=False) #, use_reloader=True)
+sock.run(app, host='0.0.0.0', port=app.config['PORT'], log_output=False) #, use_reloader=True)
 
