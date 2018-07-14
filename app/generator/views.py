@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 # Created Date: Friday, May 11th 2018, 4:12:58 pm
 # Author: Greg
 # -----
-# Last Modified: Thu Jul 12 2018
+# Last Modified: Sat Jul 14 2018
 # Modified By: Greg
 # -----
 # Copyright (c) 2018 Greg
@@ -165,9 +165,6 @@ def generate(data):
                     sentences = []
          
         sentences = sentencesTemp
-
-
-
         
         items = {}
         built = []
@@ -213,7 +210,7 @@ def generate(data):
 
       
         dictcheck = []
-        
+     
         if items:
             
             keys, values = zip(*items.items())
@@ -222,22 +219,17 @@ def generate(data):
                 built.append(experiment)
         
             random.shuffle(built)
-          
-     
-            if len(built) > 200:
-                built = [built[:100], built[101:200]]
-            else:
-                built = [built]
-            
 
             consoletext = "{}{}<br>{}".format(consoletext,slotvalues,slotcontents)
         
-            pi=0
-            for builtitems in built[pi]:
-                for sent in sentences:
+            pi = 0
+     
+            for sent in sentences:
+                for x in range(0, 3): #loop 3 times.. create 3 sentences from slot values for each sentence
                     temp1 = sent
                     temp2 = sent
-                    for key, value in builtitems.iteritems():
+                    d = built[pi]
+                    for key, value in d.iteritems():
                         f = "${}".format(key)
                         m = "<span style='background-color: " + colors[key] + "'>" + value + "</span>"
                         c = "[{}]({})".format(value,key)
@@ -248,7 +240,10 @@ def generate(data):
                         dictcheck.append(temp1)
                         stg += temp2 + "<br>"
                         consoletext += temp1 + "<br>"
-                pi=1
+                    pi += 1
+                    
+                    if pi == len(built):
+                        pi = 0
         else:
             for sent in sentences:
                 if sent not in dictcheck:
